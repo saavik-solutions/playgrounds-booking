@@ -18,7 +18,7 @@ export const authRoutes = [
     "/auth/reset",
     "/auth/new-password",
     "/booking-app/grounds",
-    "/booking-app/grounds/[id]",
+    "/booking-app/grounds/[id]"
 ];
 
 /**
