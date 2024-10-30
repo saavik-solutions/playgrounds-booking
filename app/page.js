@@ -1,10 +1,11 @@
-import DashboardPage from "./dashboard/page";
 
+import Dashboard from './Dashboard/page';
 
 export default function Home() {
   return (
     <>
-   <DashboardPage/>
+    
+   <Dashboard/>
     </>
   );
 }
