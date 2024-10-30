@@ -1,5 +1,5 @@
-import GroundCards from '@/components/GroundCards'
-import SearchCard from '@/components/SearchCard'
+import GroundCards from '@/components/dashboard/GroundCards'
+import SearchCard from '@/components/dashboard/SearchCard'
 import React from 'react'
 
 export default function Dashboard() {
