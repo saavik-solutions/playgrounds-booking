@@ -1,56 +1,36 @@
-import { z } from 'zod';
-import clientPromise from '../../../lib/mongodb';
-import bcrypt from 'bcryptjs';
+import dbConnect from "@/lib/utils/dbConnect";
+import bcrypt from "bcrypt";
+import { z } from "zod";
 
-// Define Zod schema for request validation
 const signUpSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
   email: z.string().email(),
-  password: z.string().min(8, 'Password must be at least 8 characters long'),
+  password: z.string().min(8),
 });
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', ['POST']);
-    return res.status(405).end(`Method ${req.method} Not Allowed`);
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Method Not Allowed" });
   }
 
   try {
-    // Validate the request body with Zod
-    const { name, email, password } = signUpSchema.parse(req.body);
+    const { email, password } = signUpSchema.parse(req.body);
+    await dbConnect();
+    const db = (await clientPromise).db();
 
-    // Connect to MongoDB
-    const client = await clientPromise;
-    const db = client.db();
-
-    // Check if the email is already in use
-    const existingUser = await db.collection('users').findOne({ email });
+    const existingUser = await db.collection("users").findOne({ email });
     if (existingUser) {
-      return res.status(409).json({ error: 'Email is already in use' });
+      return res.status(400).json({ message: "User already exists" });
     }
 
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create the new user object
-    const newUser = {
-      name,
+    const result = await db.collection("users").insertOne({
       email,
       password: hashedPassword,
-      createdAt: new Date(),
-    };
+    });
 
-    // Insert the user into the database
-    const result = await db.collection('users').insertOne(newUser);
-
-    // Return success response
-    res.status(201).json({ message: 'Sign-up successful', userId: result.insertedId });
+    res.status(201).json({ message: "User created successfully", userId: result.insertedId });
   } catch (error) {
-    // Send validation errors or internal server errors
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: error.errors });
-    }
-    console.error('Sign-up error:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 }
