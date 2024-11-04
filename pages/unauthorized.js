@@ -1,6 +1,11 @@
 // pages/unauthorized.js
 import Link from 'next/link';
 
+export function getServerSideProps({ res }) {
+  res.statusCode = 403;
+  return { props: {} };
+}
+
 export default function Unauthorized() {
   return (
     <div style={{ textAlign: 'center', padding: '50px' }}>

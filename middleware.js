@@ -23,12 +23,9 @@ export function middleware(request) {
   // Get the token from request headers (e.g., Authorization: Bearer <token>)
   const token = request.headers.get('authorization')?.split(' ')[1];
 
-  // If no token is found, deny access
+ // If no token is found, redirect to unauthorized page
   if (!token) {
-    return new NextResponse(
-      JSON.stringify({ message: 'Unauthorized: No token provided' }),
-      { status: 401, headers: { 'Content-Type': 'application/json' } }
-    );
+    return NextResponse.redirect(new URL('/unauthorized', request.url));
   }
 
   try {
@@ -37,29 +34,19 @@ export function middleware(request) {
 
     // Check if user has the required role for the matched route
     if (user.role !== matchedRoute.role) {
-      return new NextResponse(
-        JSON.stringify({ message: 'Forbidden: Insufficient privileges' }),
-        { status: 403, headers: { 'Content-Type': 'application/json' } }
-      );
+      return NextResponse.redirect(new URL('/unauthorized', request.url));
     }
-
-    // Add user data to the request (this data will be available in the request headers)
-    request.user = user;
 
     // Allow the request to proceed
     return NextResponse.next();
   } catch (error) {
-    // If token verification fails, deny access
-    return new NextResponse(
-      JSON.stringify({ message: 'Unauthorized: Invalid token' }),
-      { status: 401, headers: { 'Content-Type': 'application/json' } }
-    );
+    // If token verification fails, redirect to unauthorized page
+    return NextResponse.redirect(new URL('/unauthorized', request.url));
   }
 }
 
 export const config = {
   matcher: [
-    // Apply middleware to these routes only (customize as needed)
     '/api/admin/:path*',
     '/api/user/:path*',
   ],

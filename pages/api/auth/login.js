@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import clientPromise from '../../../lib/mongodb';
-import bcrypt from 'bcryptjs';
+import dbConnect from '@/lib/utils/dbConnect';
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 // Define Zod schema for request validation
@@ -19,8 +19,8 @@ export default async function handler(req, res) {
     // Validate request body with Zod
     const { email, password } = signInSchema.parse(req.body);
 
-    // Connect to the MongoDB client
-    const client = await clientPromise;
+  // Connect to MongoDB
+  const client = await dbConnect();
     const db = client.db();
 
     // Check if user exists
@@ -36,20 +36,30 @@ export default async function handler(req, res) {
     }
 
     // Create JWT token
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET is not defined in environment variables');
+    }
+
     const token = jwt.sign(
-      { userId: user._id, email: user.email },
+      { userId: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
 
+    // Set token in HTTP-only cookie for security
+    res.setHeader('Set-Cookie', `auth-token=${token}; HttpOnly; Path=/; Secure; SameSite=Strict`);
+
     // Send success response
-    res.status(200).json({ token, message: 'Sign-in successful' });
+    res.status(200).json({ message: 'Sign-in successful' });
   } catch (error) {
-    // If validation fails, send error message
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: error.errors });
+      // Send specific validation errors if Zod validation fails
+      return res.status(400).json({ error: 'Validation error', details: error.errors });
     }
-    console.error('Sign-in error:', error);
+    // Log error only in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Sign-in error:', error);
+    }
     res.status(500).json({ error: 'Internal Server Error' });
   }
 }
