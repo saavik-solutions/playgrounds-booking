@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import GroundCard from '@/components/dashboard/GroundCard';
 import SearchCard from '@/components/dashboard/SearchCard';
 import axios from 'axios';
+import MapSection from '../components/MapSection.js';
+import Footer from '../components/Footer.js';
 
 export default function Dashboard() {
   const [grounds, setGrounds] = useState([]);
@@ -22,6 +24,9 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col items-center p-4 space-y-6">
+      {/* Map Section */}
+      <MapSection />
+
       {/* Search Card Section */}
       <SearchCard />
 
@@ -46,6 +51,9 @@ export default function Dashboard() {
           <p className="text-center text-gray-500">No grounds available for booking at the moment.</p>
         )}
       </div>
+
+      {/* Footer Section */}
+      <Footer />
     </div>
   );
 }
