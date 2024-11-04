@@ -1,5 +1,6 @@
 import { signIn } from "next-auth/react";
-import AuthForm from "@/components/AuthForm";
+import AuthForm from "../components/auth/authForm";
+
 
 export default function SignInPage() {
   return (
