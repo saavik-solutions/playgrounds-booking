@@ -9,11 +9,16 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@auth/mongodb-adapter": "^3.7.2",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "@mui/material": "^6.1.5",
     "@reduxjs/toolkit": "^2.3.0",
+<<<<<<< HEAD
     "axios": "^1.7.7",
+=======
+    "bcrypt": "^5.1.1",
+>>>>>>> 5d1616eddab8f51c3d90fd7df2ea8f92314b0054
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -21,6 +26,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.10.0",
     "next": "",
+    "next-auth": "^4.24.10",
     "react": "^18",
     "react-dom": "^18",
     "react-redux": "^9.1.2",

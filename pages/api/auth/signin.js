@@ -1,55 +1,36 @@
-import { z } from 'zod';
-import clientPromise from '../../../lib/mongodb';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import dbConnect from "@/lib/utils/dbConnect";
+import bcrypt from "bcrypt";
+import { z } from "zod";
 
-// Define Zod schema for request validation
-const signInSchema = z.object({
+const signUpSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
 });
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', ['POST']);
-    return res.status(405).end(`Method ${req.method} Not Allowed`);
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Method Not Allowed" });
   }
 
   try {
-    // Validate request body with Zod
-    const { email, password } = signInSchema.parse(req.body);
+    const { email, password } = signUpSchema.parse(req.body);
+    await dbConnect();
+    const db = (await clientPromise).db();
 
-    // Connect to the MongoDB client
-    const client = await clientPromise;
-    const db = client.db();
-
-    // Check if user exists
-    const user = await db.collection('users').findOne({ email });
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+    const existingUser = await db.collection("users").findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
     }
 
-    // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid email or password' });
-    }
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create JWT token
-    const token = jwt.sign(
-      { userId: user._id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
+    const result = await db.collection("users").insertOne({
+      email,
+      password: hashedPassword,
+    });
 
-    // Send success response
-    res.status(200).json({ token, message: 'Sign-in successful' });
+    res.status(201).json({ message: "User created successfully", userId: result.insertedId });
   } catch (error) {
-    // If validation fails, send error message
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: error.errors });
-    }
-    console.error('Sign-in error:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 }

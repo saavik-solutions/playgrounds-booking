@@ -1,11 +1,11 @@
 
-import Dashboard from './Dashboard/page';
+import Dashboard from './dashboard/page';
 
 export default function Home() {
   return (
     <>
     
-   <Dashboard/>
+ <h1>Hello I am Home Page</h1>
     </>
   );
 }
