@@ -29,3 +29,4 @@ const GroundCard = ({ ground }) => {
     </div>
   );
 };
+export default GroundCard;
