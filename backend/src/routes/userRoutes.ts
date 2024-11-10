@@ -1,10 +1,11 @@
-import express from 'express';
-import { createUser, getUser } from '../controllers/userController';
-import { authorizeRole } from '../middleware/rbac';
+import { Router } from "express";
+import { createUserHandler} from "../controllers/userController";
+import { validateBody } from "../middlewares/validate";
+import { createUserSchema } from "../schemas/userSchema";
 
-const router = express.Router();
+const router = Router();
 
-router.post('/', authorizeRole('admin'), createUser);  // Only allow 'admin' role
-router.get('/:id', getUser);
+router.post("/", validateBody(createUserSchema), createUserHandler);
+
 
 export default router;
