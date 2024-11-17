@@ -3,7 +3,7 @@ import routes from './routes';
 import cors from 'cors';
 import prisma from '@prisma/client';
 import helmet from 'helmet';
-import { errorHandler } from './middlewares/errorHandler';
+import { errorHandler } from './middlewares/globalErrorHandler';
 
 const app = express();
  
