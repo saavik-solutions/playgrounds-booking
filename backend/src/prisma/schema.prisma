@@ -1,0 +1,87 @@
+// This is your Prisma schema file
+
+datasource db {
+  provider = "postgresql"  // Assuming PostgreSQL
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum TokenType {
+  REFRESH
+  RESET_PASSWORD
+  VERIFY_EMAIL
+}
+
+// User Model
+model User {
+  id              Int        @id @default(autoincrement())
+  name            String
+  email           String     @unique
+  phone           String?
+  password        String
+  role            String     @default("user")
+  isEmailVerified Boolean    @default(false)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  bookings        Booking[]
+  tokens          Token[]    // Add relation to Token model
+}
+
+// Ground Model
+model Ground {
+  id              Int        @id @default(autoincrement())
+  groundName      String
+  location        String
+  description     String?
+  type            String     // e.g., 'football', 'cricket'
+  availability    Boolean    @default(true)
+  pricePerHour    Float
+  media           String?    // e.g., image URLs, videos
+  rating          Float?     // average rating
+  totalPeopleRated Int       @default(0)
+  bookings        Booking[]
+}
+
+// Booking Model
+model Booking {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  groundId   Int
+  date       DateTime
+  slot       String   // e.g., '6 AM - 9 AM', '9 AM - 12 PM'
+  status     String   @default("pending")  // 'pending', 'confirmed', etc.
+  createdAt  DateTime @default(now())
+  payment    Payment?
+  
+  user       User     @relation(fields: [userId], references: [id])
+  ground     Ground   @relation(fields: [groundId], references: [id])
+}
+
+model Payment {
+  id            Int      @id @default(autoincrement())
+  bookingId     Int      @unique
+  amount        Float
+  status        String   // 'initiated', 'paid', 'failed', etc.
+  transactionId String?  // Store Razorpay payment ID here
+  createdAt     DateTime @default(now())
+
+  booking       Booking  @relation(fields: [bookingId], references: [id])
+}
+
+// Token Model
+model Token {
+  id         Int        @id @default(autoincrement())
+  token      String     // The token value (e.g., JWT, random string)
+  userId     Int        // The user the token is associated with
+  type       TokenType  // The type of token (REFRESH, RESET_PASSWORD, VERIFY_EMAIL)
+  expires    DateTime   // The expiration date of the token
+  blacklisted Boolean   @default(false) // If the token is blacklisted
+  
+  createdAt  DateTime   @default(now())  // The time when the token was created
+  updatedAt  DateTime   @updatedAt       // The time when the token was last updated
+
+  user       User       @relation(fields: [userId], references: [id])  // Relate token to user
+}
