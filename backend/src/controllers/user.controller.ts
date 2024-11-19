@@ -44,7 +44,7 @@ const deleteUser = catchAsync(async (req: Request, res: Response): Promise<void>
   res.status(httpStatus.NO_CONTENT).send();
 });
 
-export default {
+export const userController= {
   createUser,
   getUsers,
   getUser,
