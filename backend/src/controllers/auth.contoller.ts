@@ -1,17 +1,36 @@
-import { Request, Response } from 'express';
-import httpStatus from 'http-status';
-import * as userService from '../services/user.service';
+// import { Request, Response, NextFunction } from 'express';
+// import httpStatus from 'http-status';
+// import userService from '../services/user.service';
+// import ApiError from '../utils/ApiError';
 
-export const register = async (req: Request, res: Response) => {
-  const user = await userService.registerUser(req.body);
-  res.status(httpStatus.CREATED).send(user);
-};
+// /**
+//  * Register a new user
+//  */
+// export const register = async (req: Request, res: Response, next: NextFunction) => {
+//   try {
+//     const user = await userService.createUser(req.body);
+//     res.status(httpStatus.CREATED).json({ message: 'User registered successfully', user });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
-export const login = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
-  const isMatch = await userService.verifyPassword(email, password);
-  if (!isMatch) {
-    return res.status(httpStatus.UNAUTHORIZED).send({ message: 'Invalid email or password' });
-  }
-  res.status(httpStatus.OK).send({ message: 'Login successful' });
-};
+// /**
+//  * Login a user
+//  */
+// export const login = async (req: Request, res: Response, next: NextFunction) => {
+//   try {
+//     const { email, password } = req.body;
+
+//     const user = await userService.getUserByEmail(email);
+//     const isPasswordValid = await userService.verifyPassword(user, password);
+
+//     if (!isPasswordValid) {
+//       throw new ApiError('Invalid email or password', httpStatus.UNAUTHORIZED);
+//     }
+
+//     res.status(httpStatus.OK).json({ message: 'Login successful', user });
+//   } catch (error) {
+//     next(error);
+//   }
+// };

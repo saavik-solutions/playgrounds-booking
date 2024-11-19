@@ -1,7 +1,5 @@
-// This is your Prisma schema file
-
 datasource db {
-  provider = "postgresql"  // Assuming PostgreSQL
+  provider = "postgresql"  
   url      = env("DATABASE_URL")
 }
 
@@ -15,7 +13,7 @@ enum TokenType {
   VERIFY_EMAIL
 }
 
-// User Model
+
 model User {
   id              Int        @id @default(autoincrement())
   name            String
@@ -30,29 +28,29 @@ model User {
   tokens          Token[]    // Add relation to Token model
 }
 
-// Ground Model
+
 model Ground {
   id              Int        @id @default(autoincrement())
   groundName      String
   location        String
   description     String?
-  type            String     // e.g., 'football', 'cricket'
+  type            String    
   availability    Boolean    @default(true)
   pricePerHour    Float
-  media           String?    // e.g., image URLs, videos
-  rating          Float?     // average rating
+  media           String?   
+  rating          Float?   
   totalPeopleRated Int       @default(0)
   bookings        Booking[]
 }
 
-// Booking Model
+
 model Booking {
   id         Int      @id @default(autoincrement())
   userId     Int
   groundId   Int
   date       DateTime
-  slot       String   // e.g., '6 AM - 9 AM', '9 AM - 12 PM'
-  status     String   @default("pending")  // 'pending', 'confirmed', etc.
+  slot       String   
+  status     String   @default("pending")
   createdAt  DateTime @default(now())
   payment    Payment?
   
@@ -64,24 +62,24 @@ model Payment {
   id            Int      @id @default(autoincrement())
   bookingId     Int      @unique
   amount        Float
-  status        String   // 'initiated', 'paid', 'failed', etc.
-  transactionId String?  // Store Razorpay payment ID here
+  status        String   
+  transactionId String?
   createdAt     DateTime @default(now())
 
   booking       Booking  @relation(fields: [bookingId], references: [id])
 }
 
-// Token Model
+
 model Token {
   id         Int        @id @default(autoincrement())
-  token      String     // The token value (e.g., JWT, random string)
-  userId     Int        // The user the token is associated with
+  token      String    
+  userId     Int       
   type       TokenType  // The type of token (REFRESH, RESET_PASSWORD, VERIFY_EMAIL)
-  expires    DateTime   // The expiration date of the token
+  expires    DateTime  
   blacklisted Boolean   @default(false) // If the token is blacklisted
   
-  createdAt  DateTime   @default(now())  // The time when the token was created
-  updatedAt  DateTime   @updatedAt       // The time when the token was last updated
+  createdAt  DateTime   @default(now())  
+  updatedAt  DateTime   @updatedAt       
 
-  user       User       @relation(fields: [userId], references: [id])  // Relate token to user
+  user       User       @relation(fields: [userId], references: [id]) 
 }
