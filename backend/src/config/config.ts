@@ -8,8 +8,8 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 // Define the schema for environment variables using Zod
 const envSchema = z.object({
   NODE_ENV: z.enum(['production', 'development', 'test']),
-  PORT: z.coerce.number().default(3000),
-  MONGODB_URL: z.string().min(1, 'MongoDB URL is required'),
+  PORT: z.coerce.number().default(4000),
+  DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
   JWT_SECRET: z.string().min(1, 'JWT secret key is required'),
   JWT_ACCESS_EXPIRATION_MINUTES: z.coerce.number().default(30),
   JWT_REFRESH_EXPIRATION_DAYS: z.coerce.number().default(30),
@@ -30,7 +30,7 @@ export const config = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
   prisma: {
-    databaseUrl: `${envVars.MONGODB_URL}${envVars.NODE_ENV === 'test' ? '-test' : ''}`,
+    databaseUrl: envVars.DATABASE_URL,
   },
   jwt: {
     secret: envVars.JWT_SECRET,

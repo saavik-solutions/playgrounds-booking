@@ -1,6 +1,13 @@
 import { PrismaClient } from '@prisma/client';
+import { config } from './config/config';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: config.prisma.databaseUrl, 
+    },
+  },
+});
 
 interface PaginationOptions {
   page?: number;
