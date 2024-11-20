@@ -2,8 +2,8 @@ import jwt from 'jsonwebtoken';
 import moment, { Moment } from 'moment';
 import httpStatus from 'http-status';
 import config from '../config/config';
-import * as userService from './user.service';
-import { Token } from '../models';
+import { userService } from '../services';
+import { TokenModel } from '../models';
 import ApiError from '../utils/ApiError';
 import { tokenTypes } from '../config/tokens';
 import { ObjectId } from 'mongoose';
@@ -64,8 +64,8 @@ export const saveToken = async (
   expires: Moment,
   type: string,
   blacklisted: boolean = false
-): Promise<typeof Token> => {
-  return Token.create({
+): Promise<typeof TokenModel> => {
+  return TokenModel.create({
     token,
     user: userId,
     expires: expires.toDate(),
@@ -83,18 +83,18 @@ export const saveToken = async (
 export const verifyToken = async (token: string, type: string): Promise<typeof Token> => {
   try {
     const payload = jwt.verify(token, config.jwt.secret) as TokenPayload;
-    const tokenDoc = await Token.findOne({
+    const tokenDoc = await TokenModel.findOne({
       token,
       type,
       user: payload.sub,
       blacklisted: false,
     });
     if (!tokenDoc) {
-      throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid or expired token');
+      throw new ApiError('Invalid or expired token',httpStatus.UNAUTHORIZED, );
     }
     return tokenDoc;
   } catch (error) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid or expired token');
+    throw new ApiError('Invalid or expired token',httpStatus.UNAUTHORIZED, );
   }
 };
 
@@ -132,7 +132,7 @@ export const generateAuthTokens = async (user: { id: ObjectId }): Promise<AuthTo
 export const generateResetPasswordToken = async (email: string): Promise<string> => {
   const user = await userService.getUserByEmail(email);
   if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'No user found with this email');
+    throw new ApiError('No user found with this email', httpStatus.NOT_FOUND, );
   }
 
   const expires = moment().add(config.jwt.resetPasswordExpirationMinutes, 'minutes');
