@@ -58,7 +58,7 @@ const verifyEmail = z.object({
   }),
 });
 
-export const authValidations = {
+export const authValidation = {
   register,
   login,
   logout,
