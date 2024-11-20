@@ -1,12 +1,9 @@
-// user.ts (or models/user.ts)
-
 import { PrismaClient, User as PrismaUser } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import { paginate } from '../prismaClient'; // Import the pagination function
+import { paginate } from '../prismaClient'; 
 
 const prisma = new PrismaClient();
 
-// Define the toJSON function to sanitize and format the user data
 export const toJSON = <T extends Record<string, any>>(data: T): T => {
   const result = { ...data };
 

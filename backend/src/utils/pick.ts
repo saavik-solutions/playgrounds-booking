@@ -13,8 +13,9 @@ const pick = <T extends AnyObject, K extends keyof T>(
   keys: K[]
 ): Partial<Record<K, string>> => {
   return keys.reduce((obj, key) => {
-    if (object && Object.prototype.hasOwnProperty.call(object, key)) {
-      const value = object[key];
+    if (object && typeof object === 'object' && key in object) {
+      // Access key safely after type narrowing
+      const value = (object as T)[key];
       // Ensure the value is cast to a string if necessary
       obj[key] = Array.isArray(value) ? value.join(',') : String(value);
     }

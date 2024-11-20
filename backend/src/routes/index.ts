@@ -1,12 +1,42 @@
-// src/routes/index.ts
+import express, { Router } from 'express';
+import authRoute from './auth.route';
+import userRoute from './user.route';
+import docsRoute from './docs.route';
+import config from '../../config/config';
 
-import { Router } from 'express';
-import userRoutes from './userRoutes';
+// Create a router instance
+const router: Router = express.Router();
 
+// Define the default routes
+const defaultRoutes: Array<{ path: string; route: Router }> = [
+  {
+    path: '/auth',
+    route: authRoute,
+  },
+  {
+    path: '/users',
+    route: userRoute,
+  },
+];
 
-const router = Router();
+// Define the development-only routes
+const devRoutes: Array<{ path: string; route: Router }> = [
+  {
+    path: '/docs',
+    route: docsRoute,
+  },
+];
 
-router.use('/users', userRoutes);
+// Register default routes
+defaultRoutes.forEach((route) => {
+  router.use(route.path, route.route);
+});
 
+// Register development-only routes
+if (config.env === 'development') {
+  devRoutes.forEach((route) => {
+    router.use(route.path, route.route);
+  });
+}
 
 export default router;

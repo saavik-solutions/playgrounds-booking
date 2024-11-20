@@ -3,7 +3,7 @@ import routes from './routes';
 import cors from 'cors';
 import prisma from '@prisma/client';
 import helmet from 'helmet';
-import { errorHandler } from './middlewares/globalErrorHandler';
+import globalErrorHandler from './middlewares/globalErrorHandler';
 
 const app = express();
  
@@ -12,7 +12,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
 app.use('/api', routes);
 app.use(helmet());
-app.use(errorHandler);
+app.use(globalErrorHandler);
 // Add other routes here
 
 // Global error handling middleware
@@ -28,5 +28,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 process.on('SIGTERM', async () => {
     await prisma.$disconnect();
 });
+
+
 
 export default app;
