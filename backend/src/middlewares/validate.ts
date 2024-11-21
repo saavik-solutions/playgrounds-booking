@@ -1,22 +1,28 @@
-import { Request, Response, NextFunction } from 'express';
-import { AnyZodObject } from 'zod';
+import { Request, Response, NextFunction } from "express";
 
-const validate =
-  (schema: AnyZodObject) =>
+export const validateRequest =
+  (schema: any) =>
   (req: Request, res: Response, next: NextFunction): void => {
     try {
-      schema.parse({
-        body: req.body,
-        query: req.query,
+      // Parse and validate request
+      const validated = schema.parse({
         params: req.params,
+        query: req.query,
+        body: req.body,
       });
+
+      // Transform numericId to number if present in params
+      if (validated.params?.userId) {
+        validated.params.userId = parseInt(validated.params.userId, 10);
+      }
+
+      // Attach validated data to request
+      req.params = validated.params || req.params;
+      req.query = validated.query || req.query;
+      req.body = validated.body || req.body;
+
       next();
     } catch (error) {
-      res.status(400).send({
-        message: 'Validation Error',
-        errors: {},
-      });
+      next(error); // Pass validation errors to the error handler
     }
   };
-
-export default validate;

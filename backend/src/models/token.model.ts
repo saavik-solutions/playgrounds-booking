@@ -1,5 +1,5 @@
-import { PrismaClient, Token, TokenType } from '@prisma/client';
-
+import { PrismaClient, Token } from '@prisma/client';
+import { TokenTypes } from '../config/token';
 const prisma = new PrismaClient();
 
 // Define a toJSON function to sanitize the token data
@@ -22,7 +22,7 @@ export const toJSON = <T extends Record<string, any>>(data: T): T => {
 const createToken = async (
   userId: number,
   token: string,
-  type: TokenType,
+  type: TokenTypes,
   expires: Date,
   blacklisted: boolean = false  // Make sure this parameter is included here
 ): Promise<Token> => {
@@ -48,7 +48,7 @@ const createToken = async (
 
 
 // Get token by userId and type
-const getTokenByUserAndType = async (userId: number, type: TokenType): Promise<Token | null> => {
+const getTokenByUserAndType = async (userId: number, type: TokenTypes): Promise<Token | null> => {
   try {
     const token = await prisma.token.findFirst({
       where: {

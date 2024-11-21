@@ -62,10 +62,27 @@ const getUsersWithPagination = async (
   return paginatedUsers;
 };
 
+const findUserById = async (id: number) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id }, // id is an integer
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    return user;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
 
 export const User = {
   isEmailTaken,
   createUser,
   isPasswordMatch,
   getUsersWithPagination,
+  findUserById
 };

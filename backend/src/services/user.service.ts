@@ -138,12 +138,14 @@ const deleteUser = async (id: number): Promise<void> => {
   }
 };
 
-const getUserByEmail = async (email: string) => {
-  return await prisma.user.findUnique({
+const getUserByEmail = async (email: string): Promise<PrismaUser | null> => {
+  const user = await prisma.user.findUnique({
     where: {
       email: email,
     },
   });
+
+  return user ? toJSON(user) : null;
 };
 export const userService = {
   isEmailTaken,

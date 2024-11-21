@@ -9,6 +9,7 @@
     "rootDir": "./src",
      "moduleResolution": "node16",
     "allowSyntheticDefaultImports": true,
+     "typeRoots": ["./node_modules/@types", "./types"],
     "resolveJsonModule": true
   },
   "include": ["src/**/*.ts"],
