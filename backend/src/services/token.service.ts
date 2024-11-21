@@ -83,14 +83,17 @@ const verifyToken = async (token: string, type: TokenTypes): Promise<Token> => {
 /**
  * Generate authentication tokens (access and refresh tokens)
  */
-const generateAuthTokens = async (user: { id: string }): Promise<AuthTokens> => {
+const generateAuthTokens = async (user: { id: string | number }): Promise<AuthTokens> => {
   const accessTokenExpires = moment().add(config.jwt.accessExpirationMinutes, 'minutes');
   const refreshTokenExpires = moment().add(config.jwt.refreshExpirationDays, 'days');
 
-  const accessToken = generateToken(user.id, accessTokenExpires, TokenTypes.ACCESS);
-  const refreshToken = generateToken(user.id, refreshTokenExpires, TokenTypes.REFRESH);
+  // Ensure user.id is a string when passing to generateToken
+  const userId = String(user.id);  // Convert id to string if it's a number
 
-  await saveToken(refreshToken, user.id, refreshTokenExpires, TokenTypes.REFRESH);
+  const accessToken = generateToken(userId, accessTokenExpires, TokenTypes.ACCESS);
+  const refreshToken = generateToken(userId, refreshTokenExpires, TokenTypes.REFRESH);
+
+  await saveToken(refreshToken, userId, refreshTokenExpires, TokenTypes.REFRESH);
 
   return {
     access: {
@@ -103,6 +106,7 @@ const generateAuthTokens = async (user: { id: string }): Promise<AuthTokens> => 
     },
   };
 };
+
 
 /**
  * Generate a reset password token

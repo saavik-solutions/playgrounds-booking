@@ -105,6 +105,7 @@ const updateUser = async (
     email: string;
     password: string;
     role: string;
+    isEmailVerified: boolean;  // Add this property
   }>
 ): Promise<PrismaUser | null> => {
   try {
@@ -137,12 +138,20 @@ const deleteUser = async (id: number): Promise<void> => {
   }
 };
 
-export const User = {
+const getUserByEmail = async (email: string) => {
+  return await prisma.user.findUnique({
+    where: {
+      email: email,
+    },
+  });
+};
+export const userService = {
   isEmailTaken,
   createUser,
   isPasswordMatch,
   getUsersWithPagination,
   getUserById,
+  getUserByEmail,
   updateUser,
   deleteUser,
 };

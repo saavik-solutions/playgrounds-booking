@@ -44,14 +44,18 @@ const logout = async (refreshToken: string) => {
  */
 const refreshAuth = async (refreshToken: string) => {
   try {
+    // Verify the refresh token
     const refreshTokenDoc = await tokenService.verifyToken(refreshToken, TokenTypes.REFRESH);
-    const user = await userService.getUserById(refreshTokenDoc.userId);
+
+    // Pass the userId as a number, no need to cast to string
+    const user = await userService.getUserById(refreshTokenDoc.userId);  // Directly pass as number
 
     if (!user) {
       throw new ApiError('User not found', httpStatus.UNAUTHORIZED);
     }
 
-    return tokenService.generateAuthTokens(user); // Generate new access and refresh tokens
+    // Generate new authentication tokens
+    return tokenService.generateAuthTokens(user);
   } catch (error) {
     throw new ApiError('Invalid refresh token', httpStatus.UNAUTHORIZED);
   }
@@ -69,7 +73,8 @@ const resetPassword = async (resetToken: string, newPassword: string) => {
       throw new ApiError('User not found', httpStatus.UNAUTHORIZED);
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10); // Hash the new password before saving
+    // Hash the new password before saving
+    const hashedPassword = await bcrypt.hash(newPassword, 10); 
     await userService.updateUser(user.id, { password: hashedPassword });
     await tokenService.blacklistToken(String(resetTokenDoc.id)); // Blacklist the reset token
   } catch (error) {
@@ -89,7 +94,8 @@ const verifyEmail = async (verifyEmailToken: string) => {
       throw new ApiError('User not found', httpStatus.UNAUTHORIZED);
     }
 
-    await userService.updateUser(user.id, { isEmailVerified: true }); // Mark email as verified
+    // Mark email as verified
+    await userService.updateUser(user.id, { isEmailVerified: true });
     await tokenService.blacklistToken(String(verifyEmailTokenDoc.id)); // Blacklist the verification token
   } catch (error) {
     throw new ApiError('Error verifying email', httpStatus.INTERNAL_SERVER_ERROR);
