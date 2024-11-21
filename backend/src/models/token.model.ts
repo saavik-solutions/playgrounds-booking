@@ -18,8 +18,14 @@ export const toJSON = <T extends Record<string, any>>(data: T): T => {
   return result;
 };
 
-// Create a new token in the database
-const createToken = async (userId: number, token: string, type: TokenType, expires: Date): Promise<Token> => {
+// Update createToken to accept the blacklisted parameter
+const createToken = async (
+  userId: number,
+  token: string,
+  type: TokenType,
+  expires: Date,
+  blacklisted: boolean = false  // Make sure this parameter is included here
+): Promise<Token> => {
   try {
     const createdToken = await prisma.token.create({
       data: {
@@ -27,7 +33,7 @@ const createToken = async (userId: number, token: string, type: TokenType, expir
         token,
         type,
         expires,
-        blacklisted: false, // Default value
+        blacklisted, // Store the blacklisted flag
       },
     });
 
@@ -39,6 +45,7 @@ const createToken = async (userId: number, token: string, type: TokenType, expir
     throw new Error("Unknown error occurred while creating token.");
   }
 };
+
 
 // Get token by userId and type
 const getTokenByUserAndType = async (userId: number, type: TokenType): Promise<Token | null> => {
@@ -111,11 +118,45 @@ const deleteToken = async (tokenId: number): Promise<Token> => {
     throw new Error("Unknown error occurred while deleting token.");
   }
 };
+// Add a method to fetch a token by its ID in TokenModel
+const getTokenById = async (tokenId: number): Promise<Token | null> => {
+  try {
+    const token = await prisma.token.findUnique({
+      where: { id: tokenId },  // Find token by ID
+    });
+
+    return token ? toJSON(token) : null;  // Apply toJSON if token found
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new Error(`Error fetching token by ID: ${error.message}`);
+    }
+    throw new Error("Unknown error occurred while fetching token by ID.");
+  }
+};
+
+// Update a token's properties, such as setting it to blacklisted
+const updateToken = async (tokenId: number, updateData: Partial<Token>): Promise<Token> => {
+  try {
+    const updatedToken = await prisma.token.update({
+      where: { id: tokenId },  // Find token by ID
+      data: updateData,         // Apply the update data
+    });
+
+    return toJSON(updatedToken);  // Apply toJSON to the updated token
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new Error(`Error updating token: ${error.message}`);
+    }
+    throw new Error("Unknown error occurred while updating token.");
+  }
+};
 
 export const TokenModel = {
   createToken,
   getTokenByUserAndType,
   getTokensByUser,
+  getTokenById,
+  updateToken,
   blacklistToken,
   deleteToken,
 };

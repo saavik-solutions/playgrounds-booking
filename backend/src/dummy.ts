@@ -1,118 +1,92 @@
-import nodemailer, { Transporter, SendMailOptions } from 'nodemailer';
-import { config } from '../config/config';
-import logger from '../config/logger';
-
-let transport: Transporter | null = null;
+import bcrypt from 'bcryptjs';
+import httpStatus from 'http-status';
+import ApiError from '../utils/ApiError';
+import { userService } from '../services'; // Corrected to userService
+import { tokenService } from '../services'; // Assuming tokenService is exported
+import { TokenTypes } from '../config/token'; // Ensure TokenTypes is properly exported
+import { stringify } from 'querystring';
 
 /**
- * Initialize email transporter
+ * Authenticate a user by email and password
  */
-const initializeTransporter = (): Transporter => {
+const loginWithEmailAndPassword = async (email: string, password: string) => {
+  const user = await userService.getUsersWithPagination({ email }); // Fetch user by email
+  if (!user.results.length) {
+    throw new ApiError('Invalid email or password', httpStatus.UNAUTHORIZED);
+  }
+
+  const isPasswordValid = await userService.isPasswordMatch(password, user.results[0].password);
+  if (!isPasswordValid) {
+    throw new ApiError('Invalid email or password', httpStatus.UNAUTHORIZED);
+  }
+
+  return user.results[0]; // Return the authenticated user
+};
+
+/**
+ * Logout user by blacklisting the refresh token
+ */
+const logout = async (refreshToken: string) => {
+  const tokenDoc = await tokenService.verifyToken(refreshToken, TokenTypes.REFRESH);
+  if (!tokenDoc) {
+    throw new ApiError('Token not found', httpStatus.NOT_FOUND);
+  }
+
+  await tokenService.blacklistToken(stringify(tokenDoc.id));
+};
+
+/**
+ * Refresh access token
+ */
+const refreshAuth = async (refreshToken: string) => {
   try {
-    const transporter = nodemailer.createTransport(config.email.smtp);
-    logger.info('Email transporter initialized');
-    return transporter;
+    const refreshTokenDoc = await tokenService.verifyToken(refreshToken, TokenTypes.REFRESH);
+    const user = await userService.getUserById(refreshTokenDoc.userId);
+
+    if (!user) {
+      throw new ApiError('User not found', httpStatus.UNAUTHORIZED);
+    }
+
+    return tokenService.generateAuthTokens(user);
   } catch (error) {
-    logger.error('Failed to initialize email transporter', { error });
-    throw new Error('Failed to initialize email transporter');
-  }
-};
-
-// Lazily initialize the transporter to avoid issues with initialization order
-if (!transport) {
-  transport = initializeTransporter();
-}
-
-/**
- * Verify the connection to the email server
- * Logs the success or failure of the connection
- */
-const verifyEmailServer = async (): Promise<void> => {
-  if (!transport) {
-    logger.error('Transporter is not initialized');
-    return;
-  }
-
-  try {
-    await transport.verify();
-    logger.info('Connected to email server');
-  } catch (error) {
-    logger.warn(
-      'Unable to connect to email server. Ensure SMTP options are properly configured in .env',
-      { error }
-    );
-  }
-};
-
-// Verify the email server only in non-test environments
-if (config.env !== 'test') {
-  verifyEmailServer();
-}
-
-/**
- * Send an email using the configured transport
- * @param to - Recipient email address
- * @param subject - Email subject
- * @param text - Email body
- * @returns Promise<void>
- */
-const sendEmail = async (to: string, subject: string, text: string): Promise<void> => {
-  if (!transport) {
-    throw new Error('Transporter is not initialized');
-  }
-
-  try {
-    const msg: SendMailOptions = {
-      from: config.email.from,
-      to,
-      subject,
-      text,
-    };
-
-    await transport.sendMail(msg);
-    logger.info(`Email sent successfully to ${to} with subject: ${subject}`);
-  } catch (error) {
-    logger.error(`Failed to send email to ${to} with subject: ${subject}`, { error });
-    throw new Error('Email could not be sent');
+    throw new ApiError('Invalid refresh token', httpStatus.UNAUTHORIZED);
   }
 };
 
 /**
- * Send reset password email
- * @param to - Recipient email address
- * @param token - Reset password token
- * @returns Promise<void>
+ * Reset password using a token
  */
-const sendResetPasswordEmail = async (to: string, token: string): Promise<void> => {
-  const subject = 'Reset Password';
-  const resetPasswordUrl = `${config.appUrl}/reset-password?token=${token}`;
-  const text = `Dear user,
-To reset your password, click on this link: ${resetPasswordUrl}
-If you did not request a password reset, please ignore this email.`;
+const resetPassword = async (resetToken: string, newPassword: string) => {
+  const resetTokenDoc = await tokenService.verifyToken(resetToken, TokenTypes.RESET_PASSWORD);
+  const user = await userService.getUserById(resetTokenDoc.userId);
 
-  await sendEmail(to, subject, text);
+  if (!user) {
+    throw new ApiError('User not found', httpStatus.UNAUTHORIZED);
+  }
+
+  await userService.updateUser(user.id, { password: newPassword });
+  await tokenService.blacklistToken(resetTokenDoc.id); // Blacklist the reset token
 };
 
 /**
- * Send verification email
- * @param to - Recipient email address
- * @param token - Email verification token
- * @returns Promise<void>
+ * Verify email using a token
  */
-const sendVerificationEmail = async (to: string, token: string): Promise<void> => {
-  const subject = 'Email Verification';
-  const verificationEmailUrl = `${config.appUrl}/verify-email?token=${token}`;
-  const text = `Dear user,
-To verify your email, click on this link: ${verificationEmailUrl}
-If you did not create an account, please ignore this email.`;
+const verifyEmail = async (verifyEmailToken: string) => {
+  const verifyEmailTokenDoc = await tokenService.verifyToken(verifyEmailToken, TokenTypes.VERIFY_EMAIL);
+  const user = await userService.getUserById(verifyEmailTokenDoc.userId);
 
-  await sendEmail(to, subject, text);
+  if (!user) {
+    throw new ApiError('User not found', httpStatus.UNAUTHORIZED);
+  }
+
+  await userService.updateUser(user.id, { isEmailVerified: true });
+  await tokenService.blacklistToken(verifyEmailTokenDoc.id); // Blacklist the verification token
 };
 
-export const emailService = {
-  transport,
-  verifyEmailServer,
-  sendEmail,
-  sendResetPasswordEmail,
-  sendVerificationEmail,
+export const authService = {
+  loginWithEmailAndPassword,
+  logout,
+  refreshAuth,
+  resetPassword,
+  verifyEmail,
 };

@@ -1,121 +1,148 @@
-import httpStatus from 'http-status';
-import { PrismaClient, User } from '@prisma/client';
-import ApiError from '../utils/ApiError';
+import { PrismaClient, User as PrismaUser } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { paginate } from '../prismaClient'; // Assuming this is a utility function
+import ApiError from '../utils/ApiError'; // Importing ApiError
 
 const prisma = new PrismaClient();
 
-/**
- * Create a new user
- */
-const createUser = async (userBody: { email: string; password: string; name: string }): Promise<User> => {
-  const existingUser = await prisma.user.findUnique({ where: { email: userBody.email } });
-  if (existingUser) {
+// Utility to transform Prisma user data to JSON-safe object
+export const toJSON = <T extends Record<string, any>>(data: T): T => {
+  const result = { ...data };
+
+  // Remove private fields, such as password
+  const privateFields = ['password'];
+  privateFields.forEach((field) => delete result[field]);
+
+  // Remove metadata fields if present (e.g., createdAt, updatedAt)
+  delete result.createdAt;
+  delete result.updatedAt;
+
+  return result;
+};
+
+// User-specific functions
+const isEmailTaken = async (email: string, excludeUserId?: number): Promise<boolean> => {
+  try {
+    const user = await prisma.user.findFirst({
+      where: {
+        email,
+        NOT: excludeUserId ? { id: excludeUserId } : undefined,
+      },
+    });
+    return !!user;
+  } catch (error) {
+    throw new ApiError('Error checking email availability', httpStatus.INTERNAL_SERVER_ERROR);
+  }
+};
+
+const createUser = async (data: {
+  name: string;
+  email: string;
+  password: string;
+  role?: string;
+}): Promise<PrismaUser> => {
+  try {
+    if (await isEmailTaken(data.email)) {
+      throw new ApiError('Email is already taken', 400, undefined, 'EMAIL_TAKEN');
+    }
+
+    const hashedPassword = await bcrypt.hash(data.password, 8);
+    const createdUser = await prisma.user.create({
+      data: {
+        ...data,
+        password: hashedPassword,
+      },
+    });
+
+    return toJSON(createdUser); // Apply toJSON to the created user
+  } catch (error) {
     throw new ApiError('Email already taken', httpStatus.BAD_REQUEST);
   }
-
-  // Hash the password before saving
-  const hashedPassword = await bcrypt.hash(userBody.password, 10);
-  const user = { ...userBody, password: hashedPassword };
-
-  return prisma.user.create({ data: user });
 };
 
-/**
- * Query users with filters and pagination
- */
-const queryUsers = async (
-  filter: Record<string, any>,
-  options: { sortBy?: string; limit?: number; page?: number }
-): Promise<{ results: User[]; page: number; limit: number; totalPages: number; totalResults: number }> => {
-  const { sortBy, limit = 10, page = 1 } = options;
-
-  const sortOptions = sortBy
-    ? { [sortBy.split(':')[0]]: sortBy.split(':')[1] === 'desc' ? 'desc' : 'asc' }
-    : {};
-
-  const totalResults = await prisma.user.count({ where: filter });
-  const totalPages = Math.ceil(totalResults / limit);
-
-  const results = await prisma.user.findMany({
-    where: filter,
-    orderBy: sortOptions,
-    skip: (page - 1) * limit,
-    take: limit,
-  });
-
-  return { results, page, limit, totalPages, totalResults };
-};
-
-/**
- * Get a user by their ID
- */
-const getUserById = async (id: number): Promise<User> => {
-  const user = await prisma.user.findUnique({ where: { id } });
-  if (!user) {
-    throw new ApiError('User not found', httpStatus.NOT_FOUND);
+const isPasswordMatch = async (password: string, userPassword: string): Promise<boolean> => {
+  try {
+    return bcrypt.compare(password, userPassword);
+  } catch (error) {
+    throw new ApiError('Error comparing passwords', httpStatus.INTERNAL_SERVER_ERROR);
   }
-  return user;
 };
 
-/**
- * Get a user by their email
- */
-const getUserByEmail = async (email: string): Promise<User> => {
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) {
-    throw new ApiError('User not found with this email', httpStatus.NOT_FOUND);
+const getUsersWithPagination = async (
+  filter: Record<string, any> = {},
+  options: { page?: number; limit?: number; sortBy?: string } = {}
+) => {
+  try {
+    const paginatedUsers = await paginate<PrismaUser>('user', filter, options);
+    paginatedUsers.results = paginatedUsers.results.map(toJSON);
+
+    return paginatedUsers;
+  } catch (error) {
+    throw new ApiError('Error fetching users with pagination', httpStatus.INTERNAL_SERVER_ERROR);
   }
-  return user;
 };
 
-/**
- * Verify a user's password
- */
-const verifyPassword = async (user: User, password: string): Promise<boolean> => {
-  if (!user.password) {
-    throw new ApiError('User does not have a password set', httpStatus.UNAUTHORIZED);
-  }
-  return bcrypt.compare(password, user.password);
-};
+const getUserById = async (id: number): Promise<PrismaUser | null> => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id },
+    });
 
-/**
- * Update a user's information by their ID
- */
-const updateUserById = async (userId: number, updateBody: { email?: string; name?: string; password?: string }): Promise<User> => {
-  const user = await getUserById(userId);
-
-  if (updateBody.email) {
-    const existingUser = await prisma.user.findUnique({ where: { email: updateBody.email } });
-    if (existingUser && existingUser.id !== userId) {
-      throw new ApiError('Email already taken', httpStatus.BAD_REQUEST);
+    if (!user) {
+      throw new ApiError('User not found', httpStatus.NOT_FOUND);
     }
-  }
 
-  if (updateBody.password) {
-    updateBody.password = await bcrypt.hash(updateBody.password, 10); // Re-hash the password
+    return toJSON(user);
+  } catch (error) {
+    throw new ApiError('Error fetching user by ID', httpStatus.INTERNAL_SERVER_ERROR);
   }
-
-  return prisma.user.update({
-    where: { id: userId },
-    data: updateBody,
-  });
 };
 
-/**
- * Delete a user by their ID
- */
-const deleteUserById = async (userId: number): Promise<User> => {
-  await getUserById(userId); // Will throw an error if user is not found
-  return prisma.user.delete({ where: { id: userId } });
+const updateUser = async (
+  id: number,
+  updateData: Partial<{
+    name: string;
+    email: string;
+    password: string;
+    role: string;
+  }>
+): Promise<PrismaUser | null> => {
+  try {
+    if (updateData.email && (await isEmailTaken(updateData.email, id))) {
+      throw new ApiError('Email is already taken', httpStatus.BAD_REQUEST);
+    }
+
+    if (updateData.password) {
+      updateData.password = await bcrypt.hash(updateData.password, 8);
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: updateData,
+    });
+
+    return toJSON(updatedUser);
+  } catch (error) {
+    throw new ApiError('Error updating user', httpStatus.INTERNAL_SERVER_ERROR);
+  }
 };
 
-export const userService ={
+const deleteUser = async (id: number): Promise<void> => {
+  try {
+    await prisma.user.delete({
+      where: { id },
+    });
+  } catch (error) {
+    throw new ApiError('Error deleting user', httpStatus.INTERNAL_SERVER_ERROR);
+  }
+};
+
+export const User = {
+  isEmailTaken,
   createUser,
-  queryUsers,
+  isPasswordMatch,
+  getUsersWithPagination,
   getUserById,
-  getUserByEmail,
-  updateUserById,
-  deleteUserById,
-  verifyPassword,
+  updateUser,
+  deleteUser,
 };

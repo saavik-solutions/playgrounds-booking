@@ -3,12 +3,11 @@ import moment, { Moment } from 'moment';
 import httpStatus from 'http-status';
 import { config } from '../config/config';
 import { userService } from '../services';
-import { TokenModel } from '../models'; // Adjust this import to match your Prisma setup
+import { TokenModel } from '../models'; // Adjust this import to match your Prisma setup 
 import ApiError from '../utils/ApiError';
 import { TokenTypes } from '../config/token'; // Ensure TokenTypes is properly exported
-import { Prisma, Token } from '@prisma/client'; // Assuming Prisma is used
+import { Prisma, Token } from '@prisma/client';
 
-// Define Prisma's TokenModel interface
 interface TokenPayload {
   sub: string; // User ID
   iat: number; // Issued At
@@ -30,7 +29,7 @@ interface AuthTokens {
 /**
  * Generate a JWT token
  */
- const generateToken = (
+const generateToken = (
   userId: string,
   expires: Moment,
   type: TokenTypes,
@@ -45,10 +44,7 @@ interface AuthTokens {
   return jwt.sign(payload, secret);
 };
 
-/**
- * Save a token to the database
- */
- const saveToken = async (
+const saveToken = async (
   token: string,
   userId: string,
   expires: Moment,
@@ -56,10 +52,11 @@ interface AuthTokens {
   blacklisted: boolean = false
 ): Promise<Token> => {
   return await TokenModel.createToken(
-    Number(userId), // Assuming userId needs to be a number
+    Number(userId), // userId is converted to a number
     token,
     type,
-    expires.toDate()
+    expires.toDate(),
+    blacklisted // Now this is the 5th argument and it will work
   );
 };
 
@@ -67,7 +64,7 @@ interface AuthTokens {
 /**
  * Verify the validity of a token
  */
- const verifyToken = async (token: string, type: TokenTypes): Promise<Token> => {
+const verifyToken = async (token: string, type: TokenTypes): Promise<Token> => {
   try {
     const payload = jwt.verify(token, config.jwt.secret) as TokenPayload;
 
@@ -83,11 +80,10 @@ interface AuthTokens {
   }
 };
 
-
 /**
  * Generate authentication tokens (access and refresh tokens)
  */
- const generateAuthTokens = async (user: { id: string }): Promise<AuthTokens> => {
+const generateAuthTokens = async (user: { id: string }): Promise<AuthTokens> => {
   const accessTokenExpires = moment().add(config.jwt.accessExpirationMinutes, 'minutes');
   const refreshTokenExpires = moment().add(config.jwt.refreshExpirationDays, 'days');
 
@@ -111,7 +107,7 @@ interface AuthTokens {
 /**
  * Generate a reset password token
  */
- const generateResetPasswordToken = async (email: string): Promise<string> => {
+const generateResetPasswordToken = async (email: string): Promise<string> => {
   const user = await userService.getUserByEmail(email);
   if (!user) {
     throw new ApiError('No user found with this email', httpStatus.NOT_FOUND);
@@ -127,18 +123,36 @@ interface AuthTokens {
 /**
  * Generate a verify email token
  */
- const generateVerifyEmailToken = async (user: { id: string }): Promise<string> => {
+const generateVerifyEmailToken = async (user: { id: string }): Promise<string> => {
   const expires = moment().add(config.jwt.verifyEmailExpirationMinutes, 'minutes');
   const verifyEmailToken = generateToken(user.id, expires, TokenTypes.VERIFY_EMAIL);
 
   await saveToken(verifyEmailToken, user.id, expires, TokenTypes.VERIFY_EMAIL);
   return verifyEmailToken;
 };
+
+// Blacklist a token using the newly added getTokenById
+const blacklistToken = async (tokenId: string): Promise<Token> => {
+  const tokenDoc = await TokenModel.getTokenById(Number(tokenId)); // Fetch token by ID
+
+  if (!tokenDoc) {
+    throw new ApiError('Token not found', httpStatus.NOT_FOUND);
+  }
+
+  tokenDoc.blacklisted = true;
+  await TokenModel.updateToken(tokenDoc.id, { blacklisted: true }); // Assuming you have an update method
+
+  return tokenDoc;
+};
+
+
+
 export const tokenService = {
   generateToken,
   saveToken,
   verifyToken,
   generateAuthTokens,
   generateResetPasswordToken,
-  generateVerifyEmailToken
- }
+  generateVerifyEmailToken,
+  blacklistToken
+};

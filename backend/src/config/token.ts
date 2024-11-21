@@ -1,7 +1,14 @@
-// config/token.ts
-export enum TokenTypes {
-  ACCESS = 'ACCESS',
-  REFRESH = 'REFRESH',
-  RESET_PASSWORD = 'RESET_PASSWORD',
-  VERIFY_EMAIL = 'VERIFY_EMAIL',
+import { TokenType } from '@prisma/client'; 
+export interface AuthTokens {
+  access: {
+    token: string;
+    expires: Date;
+  };
+  refresh: {
+    token: string;
+    expires: Date;
+  };
 }
+
+// Export TokenType enum as TokenTypes
+export { TokenType as TokenTypes };
