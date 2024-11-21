@@ -30,7 +30,7 @@ interface AuthTokens {
 /**
  * Generate a JWT token
  */
-export const generateToken = (
+ const generateToken = (
   userId: string,
   expires: Moment,
   type: TokenTypes,
@@ -48,7 +48,7 @@ export const generateToken = (
 /**
  * Save a token to the database
  */
-export const saveToken = async (
+ const saveToken = async (
   token: string,
   userId: string,
   expires: Moment,
@@ -67,7 +67,7 @@ export const saveToken = async (
 /**
  * Verify the validity of a token
  */
-export const verifyToken = async (token: string, type: TokenTypes): Promise<Token> => {
+ const verifyToken = async (token: string, type: TokenTypes): Promise<Token> => {
   try {
     const payload = jwt.verify(token, config.jwt.secret) as TokenPayload;
 
@@ -87,7 +87,7 @@ export const verifyToken = async (token: string, type: TokenTypes): Promise<Toke
 /**
  * Generate authentication tokens (access and refresh tokens)
  */
-export const generateAuthTokens = async (user: { id: string }): Promise<AuthTokens> => {
+ const generateAuthTokens = async (user: { id: string }): Promise<AuthTokens> => {
   const accessTokenExpires = moment().add(config.jwt.accessExpirationMinutes, 'minutes');
   const refreshTokenExpires = moment().add(config.jwt.refreshExpirationDays, 'days');
 
@@ -111,7 +111,7 @@ export const generateAuthTokens = async (user: { id: string }): Promise<AuthToke
 /**
  * Generate a reset password token
  */
-export const generateResetPasswordToken = async (email: string): Promise<string> => {
+ const generateResetPasswordToken = async (email: string): Promise<string> => {
   const user = await userService.getUserByEmail(email);
   if (!user) {
     throw new ApiError('No user found with this email', httpStatus.NOT_FOUND);
@@ -127,10 +127,18 @@ export const generateResetPasswordToken = async (email: string): Promise<string>
 /**
  * Generate a verify email token
  */
-export const generateVerifyEmailToken = async (user: { id: string }): Promise<string> => {
+ const generateVerifyEmailToken = async (user: { id: string }): Promise<string> => {
   const expires = moment().add(config.jwt.verifyEmailExpirationMinutes, 'minutes');
   const verifyEmailToken = generateToken(user.id, expires, TokenTypes.VERIFY_EMAIL);
 
   await saveToken(verifyEmailToken, user.id, expires, TokenTypes.VERIFY_EMAIL);
   return verifyEmailToken;
 };
+export const tokenService = {
+  generateToken,
+  saveToken,
+  verifyToken,
+  generateAuthTokens,
+  generateResetPasswordToken,
+  generateVerifyEmailToken
+ }

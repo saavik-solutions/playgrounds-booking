@@ -29,6 +29,7 @@ const envVars = envSchema.parse(process.env);
 export const config = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
+ appUrl: process.env.APP_URL || `http://localhost:${process.env.PORT || 4000}`,
   prisma: {
     databaseUrl: envVars.DATABASE_URL,
   },
