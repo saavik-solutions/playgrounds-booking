@@ -1,8 +1,9 @@
-import { User } from '@prisma/client'; // Assuming User is the Prisma user model type
+import { User } from '@prisma/client';
+
 declare global {
   namespace Express {
     interface Request {
-      user?: ReturnType<typeof toJSON<PrismaUser>>;
+      user?: User;  // Use Prisma's User type directly
     }
   }
 }

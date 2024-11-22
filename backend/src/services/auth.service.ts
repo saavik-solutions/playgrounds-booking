@@ -9,18 +9,24 @@ import { TokenTypes } from '../config/token'; // Ensure TokenTypes is properly e
  * Authenticate a user by email and password
  */
 const loginWithEmailAndPassword = async (email: string, password: string) => {
-  const user = await userService.getUsersWithPagination({ email }); // Fetch user by email
-  if (!user.results.length) {
+  // Fetch a single user by email
+  const user = await userService.getUserByEmail(email);
+
+  if (!user) {
     throw new ApiError('Invalid email or password', httpStatus.UNAUTHORIZED);
   }
 
-  const isPasswordValid = await bcrypt.compare(password, user.results[0].password); // Using bcrypt to compare hashes
+  // Call the passwordMatch function from the userService to compare the hashed password
+  const isPasswordValid = await userService.isPasswordMatch(password, user.password);
+
   if (!isPasswordValid) {
     throw new ApiError('Invalid email or password', httpStatus.UNAUTHORIZED);
   }
 
-  return user.results[0]; // Return the authenticated user
+  return user;
 };
+
+
 
 /**
  * Logout user by blacklisting the refresh token

@@ -1,30 +1,27 @@
 import { Strategy as JwtStrategy, ExtractJwt, StrategyOptions } from 'passport-jwt';
-import { config } from './config';
-import { TokenTypes } from './token'; // Adjust import path for TokenTypes
-import { User } from '../models';
-import { Payload } from '../types/auth'; // Ensure Payload is defined in the right place
+import { PassportStatic } from 'passport';
+import { config } from './config'; // Assuming you have a config for environment variables
+import { User } from '../models'; // Replace with your User model
 
 const jwtOptions: StrategyOptions = {
-  secretOrKey: config.jwt.secret,
-  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), // Extract JWT from the Authorization header
+  secretOrKey: config.jwt.secret, // Secret key for verifying the token
 };
 
-const jwtVerify = async (payload: Payload, done: (error: any, user?: any, info?: any) => void): Promise<void> => {
+const jwtStrategy = new JwtStrategy(jwtOptions, async (payload, done) => {
   try {
-    if (payload.type !== TokenTypes.ACCESS) {
-      return done(new Error('Invalid token type'), false); // Updated to ensure message comes first
-    }
-
-    const user = await User.findUserById(payload.sub);
+    // Find the user by ID in the payload
+    const user = await User.findById(payload.sub); // Assuming `sub` contains the user ID
     if (!user) {
-      return done(null, false);
+      return done(null, false, { message: 'User not found' });
     }
-    done(null, user);
+    return done(null, user);
   } catch (error) {
-    done(error, false);
+    return done(error, false);
   }
+});
+
+// Function to initialize Passport with the JWT strategy
+export const setupJwtStrategy = (passport: PassportStatic) => {
+  passport.use('jwt', jwtStrategy);
 };
-
-const jwtStrategy = new JwtStrategy(jwtOptions, jwtVerify);
-
-export { jwtStrategy };

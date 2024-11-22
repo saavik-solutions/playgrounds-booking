@@ -13,7 +13,7 @@ class ApiError extends Error {
    */
   constructor(
     message: string,
-    statusCode: number = 500,
+    statusCode: number,
     cause?: Error,
     errorCode?: string
   ) {

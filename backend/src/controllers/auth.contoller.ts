@@ -18,8 +18,8 @@ const register = catchAsync(async (req: Request, res: Response) => {
 const login = catchAsync(async (req: Request, res: Response) => {
   const { email, password } = req.body;
   const user = await authService.loginWithEmailAndPassword(email, password); // User login
-  const tokens = await tokenService.generateAuthTokens(user); // Generate JWT tokens
-  res.send({ user, tokens });
+  const tokens = await tokenService.generateAuthTokens(user); 
+  res.status(httpStatus.OK).send({ user, tokens });
 });
 
 /**
