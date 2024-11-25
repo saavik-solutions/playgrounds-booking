@@ -14,6 +14,7 @@ const defaultRoutes = [
     path: '/users',
     route: userRoutes,
   },
+  
 ];
 
 defaultRoutes.forEach((route) => {

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 
 
-// This utility wraps async functions to handle errors automatically
+
 const catchAsync = (fn: (req: Request, res: Response, next: NextFunction) => Promise<void>) => {
   return (req: Request, res: Response, next: NextFunction) => {
     fn(req, res, next).catch((error) => {

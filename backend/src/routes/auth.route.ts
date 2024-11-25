@@ -1,5 +1,5 @@
 import express from 'express';
-import { authController } from '../controllers';
+import { authController, googleAuthController } from '../controllers';
 import { validateRequest} from '../middlewares/validate'; // Assuming you have a validation middleware
 import { authValidation } from '../validations/auth.validation'; // Assuming you have validation schemas
 import auth from '../middlewares/auth'; // Assuming you have an authentication middleware
@@ -27,7 +27,7 @@ router.post(
   validateRequest(authValidation.logout), // Validate logout input
   authController.logout
 );
-
+router.get('/google',googleAuthController)
 // Refresh tokens route
 router.post(
   '/refresh-tokens', 

@@ -1,23 +1,34 @@
 import { Request, Response } from 'express';
+import httpStatus from 'http-status';
 
-export const handleGoogleAuth = (req: Request, res: Response) => {
-  try {
-    const user = req.user; // Passport sets req.user after successful auth
-    if (!user) {
-      return res.status(401).json({ message: 'Authentication failed' });
-    }
+import ApiError from '../utils/ApiError'; // Custom error handling
+import catchAsync from '../utils/catchAsync'; // Wrapper for async functions
 
-    res.status(200).json({ message: 'Login successful', user });
-  } catch (error) {
-    res.status(500).json({ message: 'Internal server error', error });
+const handleGoogleAuth = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user; 
+  if (!user) {
+      throw new ApiError('Authentication failed',
+          httpStatus.UNAUTHORIZED,);
   }
-};
 
-export const logout = (req: Request, res: Response) => {
+  res.status(httpStatus.OK).json({
+    message: 'Login successful',
+    
+  });
+});
+
+ const logout = catchAsync(async (req: Request, res: Response) => {
   req.logout((err) => {
     if (err) {
-      return res.status(500).json({ message: 'Logout failed', error: err });
+      throw new ApiError('Logout failed', httpStatus.INTERNAL_SERVER_ERROR, );
     }
-    res.status(200).json({ message: 'Logout successful' });
+    res.status(httpStatus.OK).json({
+      message: 'Logout successful',
+    });
   });
-};
+});
+
+export const googleAuthController={
+    handleGoogleAuth,
+    logout
+}
