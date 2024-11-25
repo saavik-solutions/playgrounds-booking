@@ -2,23 +2,11 @@ import { PrismaClient, User as PrismaUser } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { paginate } from '../prismaClient'; // Assuming this is a utility function
 import ApiError from '../utils/ApiError'; // Importing ApiError
+import { toJSON } from '../models/plugins';
 
 const prisma = new PrismaClient();
 
-// Utility to transform Prisma user data to JSON-safe object
-export const toJSON = <T extends Record<string, any>>(data: T): T => {
-  const result = { ...data };
 
-  // Remove private fields, such as password
-  const privateFields = ['password'];
-  privateFields.forEach((field) => delete result[field]);
-
-  // Remove metadata fields if present (e.g., createdAt, updatedAt)
-  delete result.createdAt;
-  delete result.updatedAt;
-
-  return result;
-};
 
 // User-specific functions
 const isEmailTaken = async (email: string, excludeUserId?: number): Promise<boolean> => {
@@ -61,13 +49,7 @@ const createUser = async (data: {
   }
 };
 
-const isPasswordMatch = async (password: string, userPassword: string): Promise<boolean> => {
-  try {
-    return bcrypt.compare(password, userPassword);
-  } catch (error) {
-    throw new ApiError('Error comparing passwords', httpStatus.INTERNAL_SERVER_ERROR);
-  }
-};
+
 
 const getUsersWithPagination = async (
   filter: Record<string, any> = {},
@@ -158,5 +140,5 @@ export const userService = {
   updateUser,
   deleteUser,
   isEmailTaken,
-  isPasswordMatch,
+
 };

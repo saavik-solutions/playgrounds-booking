@@ -78,11 +78,41 @@ const findUserById = async (id: number) => {
     throw error;
   }
 };
+const findUserByGoogleId = async (googleId: string) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { googleId },
+    });
+
+    return user;
+  } catch (error) {
+    console.error('Error in findUserByGoogleId:', error);
+    throw error;
+  }
+};
+const createGoogleUser = async (data: { email: string; name?: string; googleId?: string }) => {
+  try {
+    const user = await prisma.user.create({
+      data: {
+        ...data,
+        password: null, // Explicitly set `password` to null
+      },
+    });
+
+    return user;
+  } catch (error) {
+    console.error('Error in createGoogleUser:', error);
+    throw error;
+  }
+};
+
 
 export const User = {
   isEmailTaken,
   createUser,
   isPasswordMatch,
   getUsersWithPagination,
-  findUserById
+  findUserById,
+  findUserByGoogleId,
+  createGoogleUser
 };

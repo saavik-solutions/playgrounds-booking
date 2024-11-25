@@ -4,6 +4,7 @@ import ApiError from '../utils/ApiError';
 import { userService } from '../services'; // Corrected to userService
 import { tokenService } from '../services'; // Assuming tokenService is exported
 import { TokenTypes } from '../config/token'; // Ensure TokenTypes is properly exported
+import { User } from '../models';
 
 /**
  * Authenticate a user by email and password
@@ -17,7 +18,7 @@ const loginWithEmailAndPassword = async (email: string, password: string) => {
   }
 
   // Call the passwordMatch function from the userService to compare the hashed password
-  const isPasswordValid = await userService.isPasswordMatch(password, user.password);
+  const isPasswordValid = await User.isPasswordMatch(password, user.password);
 
   if (!isPasswordValid) {
     throw new ApiError('Invalid email or password', httpStatus.UNAUTHORIZED);

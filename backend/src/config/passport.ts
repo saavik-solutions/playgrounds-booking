@@ -4,8 +4,8 @@ import { config } from './config'; // Assuming you have a config for environment
 import { User } from '../models'; // Replace with your User model
 
 const jwtOptions: StrategyOptions = {
-  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), // Extract JWT from the Authorization header
-  secretOrKey: config.jwt.secret, // Secret key for verifying the token
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), 
+  secretOrKey: config.jwt.secret, 
 };
 
 const jwtStrategy = new JwtStrategy(jwtOptions, async (payload, done) => {

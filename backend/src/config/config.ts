@@ -20,6 +20,10 @@ const envSchema = z.object({
   SMTP_USERNAME: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
   EMAIL_FROM: z.string().optional(),
+  GOOGLE_CLIENT_ID: z.string().min(1, 'Google Client ID is required'),
+  GOOGLE_CLIENT_SECRET: z.string().min(1, 'Google Client Secret is required'),
+  TWILIO_ACCOUNT_SID: z.string().min(1, 'Twilio Account SID is required'),
+  TWILIO_AUTH_TOKEN: z.string().min(1, 'Twilio Auth Token is required'),
 });
 
 // Parse and validate environment variables
@@ -29,7 +33,7 @@ const envVars = envSchema.parse(process.env);
 export const config = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
- appUrl: process.env.APP_URL || `http://localhost:${process.env.PORT || 4000}`,
+  appUrl: process.env.APP_URL || `http://localhost:${process.env.PORT || 4000}`,
   prisma: {
     databaseUrl: envVars.DATABASE_URL,
   },
@@ -50,5 +54,13 @@ export const config = {
       },
     },
     from: envVars.EMAIL_FROM || '',
+  },
+  google: {
+    clientId: envVars.GOOGLE_CLIENT_ID,
+    clientSecret: envVars.GOOGLE_CLIENT_SECRET,
+  },
+  twilio: {
+    accountSid: envVars.TWILIO_ACCOUNT_SID,
+    authToken: envVars.TWILIO_AUTH_TOKEN,
   },
 };

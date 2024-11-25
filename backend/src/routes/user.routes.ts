@@ -9,12 +9,12 @@ const router = express.Router();
 router
   .route('/')
   .post(
-    auth('manageUsers'), // Optional: Add role-based access control
+    // auth('manageUsers'),
     validateRequest(userValidation.createUser),
     userController.createUser
   )
   .get(
-    auth('getUsers'), // Optional: Add role-based access control
+    // auth('getUsers'), // Optional: Add role-based access control
     validateRequest(userValidation.getUsers),
     userController.getUsers
   );
