@@ -15,7 +15,8 @@ const googleStrategy = new GoogleStrategy(
     try {
       let user = await User.findUserByGoogleId(profile.id); // Use the model function
       if (!user) {
-        user = await User.createUser({
+
+        user = await User.createGoogleUser({
           googleId: profile.id,
           email: profile.emails?.[0].value,
           name: profile.displayName,
@@ -23,21 +24,25 @@ const googleStrategy = new GoogleStrategy(
       }
       done(null, user);
     } catch (error) {
-      done(error, null);
+      done(error);
     }
   }
 );
 
 
-passport.serializeUser((user: any, done) => {
-  done(null, user.id); // Serialize user ID to session
-});
+export const setupGoogleStrategy = (passport: PassportStatic) => {
+  passport.use('google', googleStrategy);
 
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await prisma.user.findUnique({ where: {  } });
-    done(null, user);
-  } catch (err) {
-    done(err, null);
-  }
-});
+  passport.serializeUser((user: any, done) => {
+    done(null, user.id);
+  });
+
+  passport.deserializeUser(async (id:number, done) => {
+    try {
+      const user = await User.findUserById(id); // Use the model function
+      done(null, user);
+    } catch (error) {
+      done(error, null);
+    }
+  });
+};

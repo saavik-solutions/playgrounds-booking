@@ -90,12 +90,15 @@ const findUserByGoogleId = async (googleId: string) => {
     throw error;
   }
 };
-const createGoogleUser = async (data: { email: string; name?: string; googleId?: string }) => {
+const createGoogleUser = async (data: {
+  email?: string; // Allow undefined
+  name?: string;
+  googleId?: string;
+}) => {
   try {
     const user = await prisma.user.create({
       data: {
         ...data,
-        password: null, // Explicitly set `password` to null
       },
     });
 

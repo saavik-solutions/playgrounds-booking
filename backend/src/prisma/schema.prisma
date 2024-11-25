@@ -17,8 +17,8 @@ enum TokenType {
 
 model User {
   id              Int        @id @default(autoincrement())
-  name            String
-  email           String     @unique
+  name            String?
+  email           String?    @unique
   phone           String?    @unique  // Optional and unique for users signing in via phone
   phoneVerified   Boolean    @default(false) // Flag to indicate phone verification status
   password        String?
