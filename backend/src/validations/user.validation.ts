@@ -2,15 +2,24 @@ import { z } from 'zod';
 
 // Custom validation for numeric ID (kept as a string for compatibility with ZodObject)
 const numericId = z.string().regex(/^\d+$/, "User ID must be a numeric string");
+const passwordSchema = z
+  .string()
+  .min(8, 'Password must be at least 8 characters long.')
+  .max(128, 'Password must be no longer than 128 characters.')
+  .regex(/(?=.*[a-z])/, 'Password must contain at least one lowercase letter.')
+  .regex(/(?=.*[A-Z])/, 'Password must contain at least one uppercase letter.')
+  .regex(/(?=.*\d)/, 'Password must contain at least one number.');
 
 export const userValidation = {
   createUser: z.object({
     body: z.object({
       name: z.string().min(1, "Name is required"),
       email: z.string().email("Invalid email address"),
-      password: z.string().min(8, "Password must be at least 8 characters"),
-      role: z.string().optional(),
-    }),
+      password: passwordSchema,
+  role: z.enum(['user', 'admin']).optional(),
+    }).refine((data) => Object.keys(data).length > 0, {
+    message: 'At least one field must be provided.',
+  })
   }),
 
   getUsers: z.object({
@@ -49,7 +58,9 @@ export const userValidation = {
       .object({
         name: z.string().optional(),
         email: z.string().email("Invalid email address").optional(),
-        role: z.string().optional(),
+       password: passwordSchema.optional(),
+    role: z.enum(['user', 'admin']).optional(),
+    isEmailVerified: z.boolean().optional(),
       })
       .refine((data) => Object.keys(data).length > 0, {
         message: "At least one field must be updated",

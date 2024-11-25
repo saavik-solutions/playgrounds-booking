@@ -54,7 +54,8 @@ const createUser = async (data: {
       },
     });
 
-    return toJSON(createdUser); // Apply toJSON to the created user
+    return toJSON(createdUser); 
+    
   } catch (error) {
     throw new ApiError('Email already taken', httpStatus.BAD_REQUEST);
   }
@@ -150,12 +151,12 @@ console.log(user);
 };
 
 export const userService = {
-  isEmailTaken,
   createUser,
-  isPasswordMatch,
   getUsersWithPagination,
   getUserById,
   getUserByEmail,
   updateUser,
   deleteUser,
+  isEmailTaken,
+  isPasswordMatch,
 };
