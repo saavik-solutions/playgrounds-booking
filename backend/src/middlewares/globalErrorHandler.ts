@@ -5,8 +5,8 @@ import ApiError from '../utils/ApiError';
 const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
   let error = err;
   if (!(error instanceof ApiError)) {
-    // If error is not an instance of ApiError, create a generic internal server error
-    error = new ApiError(error.message || 'Internal Server Error', 500);
+   
+    error = new ApiError("don't know what's happening", httpStatus.BAD_REQUEST );
   }
 
   // Log the error (you can add a logging mechanism here)

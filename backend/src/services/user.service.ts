@@ -144,9 +144,11 @@ const getUserByEmail = async (email: string): Promise<PrismaUser | null> => {
       email: email,
     },
   });
+console.log(user);
 
-  return user ? toJSON(user) : null;
+  return user ;
 };
+
 export const userService = {
   isEmailTaken,
   createUser,

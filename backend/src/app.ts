@@ -10,9 +10,11 @@ import globalErrorHandler from './middlewares/globalErrorHandler';
 import {config} from './config/config'
 import passport from 'passport';
 import { setupJwtStrategy } from './config/passport'
-
+import path from 'path';
 const app: Application = express();
 
+
+app.use(express.static(path.join(__dirname, '../../frontend/public')));
 // Middleware
 if (config.env !== 'test') {
    app.use(successHandler);

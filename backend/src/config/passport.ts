@@ -11,7 +11,7 @@ const jwtOptions: StrategyOptions = {
 const jwtStrategy = new JwtStrategy(jwtOptions, async (payload, done) => {
   try {
     // Find the user by ID in the payload
-    const user = await User.findById(payload.sub); // Assuming `sub` contains the user ID
+    const user = await User.findUserById(payload.sub); // Assuming `sub` contains the user ID
     if (!user) {
       return done(null, false, { message: 'User not found' });
     }
