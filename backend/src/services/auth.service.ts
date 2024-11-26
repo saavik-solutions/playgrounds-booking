@@ -10,14 +10,19 @@ import { User } from '../models';
  * Authenticate a user by email and password
  */
 const loginWithEmailAndPassword = async (email: string, password: string) => {
-  // Fetch a single user by email
+  // Fetch the user by email
   const user = await userService.getUserByEmail(email);
 
   if (!user) {
     throw new ApiError('Invalid email or password', httpStatus.UNAUTHORIZED);
   }
 
-  // Call the passwordMatch function from the userService to compare the hashed password
+  // Ensure password is present before comparing
+  if (!user.password) {
+    throw new ApiError('Password not set for this user', httpStatus.BAD_REQUEST);
+  }
+
+  // Validate the password using the `isPasswordMatch` utility
   const isPasswordValid = await User.isPasswordMatch(password, user.password);
 
   if (!isPasswordValid) {

@@ -25,7 +25,11 @@ const login = catchAsync(async (req: Request, res: Response) => {
 /**
  * Logout user by blacklisting refresh token
  */
-
+const logout = catchAsync(async (req: Request, res: Response) => {
+  const { refreshToken } = req.body;
+  await authService.logout(refreshToken); // Blacklist the refresh token
+  res.status(httpStatus.NO_CONTENT).send(); // No content on successful logout
+});
 
 /**
  * Refresh authentication tokens (access and refresh tokens)

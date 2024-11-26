@@ -63,4 +63,8 @@ export const config = {
     accountSid: envVars.TWILIO_ACCOUNT_SID,
     authToken: envVars.TWILIO_AUTH_TOKEN,
   },
+    session: {
+    secret: process.env.SESSION_SECRET || 'your_default_secret',
+  },
+
 };

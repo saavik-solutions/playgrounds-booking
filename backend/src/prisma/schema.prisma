@@ -41,26 +41,35 @@ model Ground {
   description     String?
   type            String    
   availability    Boolean    @default(true)
-  pricePerHour    Float
   media           String?   
   rating          Float?   
   totalPeopleRated Int       @default(0)
   bookings        Booking[]
+  slots           Slot[]
 }
 
+model Slot {
+  id        Int      @id @default(autoincrement())
+  groundId  Int
+  timeRange String   // e.g., "6am-9am"
+  price     Float
+  ground    Ground   @relation(fields: [groundId], references: [id])
+  bookings  Booking[]
+}
 
 model Booking {
   id         Int      @id @default(autoincrement())
   userId     Int
   groundId   Int
+  slotId     Int
   date       DateTime
-  slot       String   
   status     String   @default("pending")
   createdAt  DateTime @default(now())
   payment    Payment?
-  
+
   user       User     @relation(fields: [userId], references: [id])
   ground     Ground   @relation(fields: [groundId], references: [id])
+  slot       Slot     @relation(fields: [slotId], references: [id])
 }
 
 model Payment {

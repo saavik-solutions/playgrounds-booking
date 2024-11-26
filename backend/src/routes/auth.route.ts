@@ -3,6 +3,7 @@ import { authController, googleAuthController } from '../controllers';
 import { validateRequest} from '../middlewares/validate'; // Assuming you have a validation middleware
 import { authValidation } from '../validations/auth.validation'; // Assuming you have validation schemas
 import auth from '../middlewares/auth'; // Assuming you have an authentication middleware
+import passport from 'passport';
 
 const router = express.Router();
 
@@ -27,8 +28,23 @@ router.post(
   validateRequest(authValidation.logout), // Validate logout input
   authController.logout
 );
-router.get('/google',googleAuthController)
-// Refresh tokens route
+// Initiate Google OAuth
+router.get(
+  '/google',
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+  }),googleAuthController.handleGoogleAuth
+)
+
+router.get(
+  '/google/callback',
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  googleAuthController.handleGoogleAuth
+);
+
+router.post('/google/logout', googleAuthController.logout);
+
+
 router.post(
   '/refresh-tokens', 
   validateRequest(authValidation.refreshTokens), // Validate refresh token input

@@ -11,6 +11,12 @@ import {config} from './config/config'
 import passport from 'passport';
 import { setupJwtStrategy } from './config/passport'
 import path from 'path';
+import { setupGoogleStrategy } from './config/passportGoogle';
+import session from 'express-session';
+
+
+
+
 const app: Application = express();
 
 
@@ -29,12 +35,24 @@ app.use(compression()); // Compress response bodies
 
 // Routes
 app.use('/api', router);
+app.use(
+  session({
+    secret: config.session.secret, // Use a secure key from the config
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: config.env === 'production', // Use secure cookies in production
+      httpOnly: true, // Prevent client-side access
+    },
+  })
+);
 
 // jwt authentication
 app.use(passport.initialize());
-
+app.use(passport.session());
 // Setup the JWT strategy
 setupJwtStrategy(passport);
+setupGoogleStrategy(passport);
 // Health check
 app.get('/', (req: Request, res: Response) => {
   res.status(httpStatus.OK).send({ message: 'API is running' });
