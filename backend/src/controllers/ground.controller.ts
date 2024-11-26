@@ -16,6 +16,11 @@ const createGround = catchAsync(async (req, res) => {
  */
 const addSlotsToGround = catchAsync(async (req, res) => {
   const { groundId, slots } = req.body;
+
+  if (!groundId || !slots) {
+    throw new ApiError('Ground ID and slots are required', httpStatus.BAD_REQUEST);
+  }
+
   const result = await groundServices.addSlotsToGround(groundId, slots);
   res.status(httpStatus.CREATED).send(result);
 });
@@ -27,20 +32,12 @@ const getAvailableSlots = catchAsync(async (req, res) => {
   const { groundId } = req.params;
   const { date } = req.query;
 
-  if (!date) {
-    throw new ApiError('Date is required', httpStatus.BAD_REQUEST);
+  if (!groundId || !date) {
+    throw new ApiError('Ground ID and date are required', httpStatus.BAD_REQUEST);
   }
 
   const availableSlots = await groundServices.getAvailableSlots(Number(groundId), date as string);
   res.status(httpStatus.OK).send(availableSlots);
-});
-
-/**
- * Book a slot
- */
-const bookSlot = catchAsync(async (req, res) => {
-  const booking = await groundServices.bookSlot(req.body);
-  res.status(httpStatus.CREATED).send(booking);
 });
 
 /**
@@ -52,12 +49,31 @@ const getAllGrounds = catchAsync(async (req, res) => {
 });
 
 /**
- * Get bookings for a user
+ * Update a ground
  */
-const getUserBookings = catchAsync(async (req, res) => {
-  const { userId } = req.params;
-  const bookings = await groundServices.getUserBookings(Number(userId));
-  res.status(httpStatus.OK).send(bookings);
+const updateGround = catchAsync(async (req, res) => {
+  const { groundId } = req.params;
+
+  if (!groundId) {
+    throw new ApiError('Ground ID is required', httpStatus.BAD_REQUEST);
+  }
+
+  const updatedGround = await groundServices.updateGround(Number(groundId), req.body);
+  res.status(httpStatus.OK).send(updatedGround);
+});
+
+/**
+ * Delete a ground
+ */
+const deleteGround = catchAsync(async (req, res) => {
+  const { groundId } = req.params;
+
+  if (!groundId) {
+    throw new ApiError('Ground ID is required', httpStatus.BAD_REQUEST);
+  }
+
+  await groundServices.deleteGround(Number(groundId));
+  res.status(httpStatus.NO_CONTENT).send();
 });
 
 /**
@@ -67,7 +83,7 @@ export const groundController = {
   createGround,
   addSlotsToGround,
   getAvailableSlots,
-  bookSlot,
   getAllGrounds,
-  getUserBookings,
+  updateGround,
+  deleteGround,
 };
