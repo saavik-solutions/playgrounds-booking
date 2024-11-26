@@ -101,9 +101,6 @@ const getUserBookings = async (userId: number) => {
   });
 };
 
-/**
- * Export all functions as groundServices
- */
 export const groundServices = {
   createGround,
   addSlotsToGround,
