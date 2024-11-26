@@ -49,32 +49,6 @@ const getAvailableSlots = async (groundId: number, date: string) => {
 /**
  * Book a slot
  */
-const bookSlot = async (data: {
-  userId: number;
-  groundId: number;
-  slotId: number;
-  date: string;
-}) => {
-  const { userId, groundId, slotId, date } = data;
-
-  // Check if the slot is already booked
-  const existingBooking = await prisma.booking.findFirst({
-    where: { groundId, slotId, date: new Date(date) },
-  });
-
-  if (existingBooking) {
-    throw new Error('Slot is already booked');
-  }
-
-  return await prisma.booking.create({
-    data: {
-      userId,
-      groundId,
-      slotId,
-      date: new Date(date),
-    },
-  });
-};
 
 /**
  * Get all grounds
@@ -89,15 +63,25 @@ const getAllGrounds = async () => {
 };
 
 /**
- * Get bookings for a user
+ * Update a ground
  */
-const getUserBookings = async (userId: number) => {
-  return await prisma.booking.findMany({
-    where: { userId },
-    include: {
-      ground: true,
-      slot: true,
-    },
+const updateGround = async (groundId: number, data: Partial<{
+  groundName: string;
+  location: string;
+  description: string;
+  type: string;
+  media: string;
+}>) => {
+  return await prisma.ground.update({
+    where: { id: groundId },
+    data,
+  });
+};
+
+
+const deleteGround = async (groundId: number) => {
+  return await prisma.ground.delete({
+    where: { id: groundId },
   });
 };
 
@@ -105,7 +89,8 @@ export const groundServices = {
   createGround,
   addSlotsToGround,
   getAvailableSlots,
-  bookSlot,
-  getAllGrounds,
-  getUserBookings,
+    deleteGround,
+    getAllGrounds,
+  updateGround
+
 };
