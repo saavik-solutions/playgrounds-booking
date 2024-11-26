@@ -10,3 +10,10 @@ const bookingSchema = z.object({
     'Status must be one of: pending, confirmed, cancelled'
   ),
 });
+const deleteBookingSchema = z.object({
+  bookingId: z.number().int().positive('Booking ID must be a positive integer')
+});
+export const bookingValidation = {
+  bookingSchema,
+  deleteBookingSchema
+ }
