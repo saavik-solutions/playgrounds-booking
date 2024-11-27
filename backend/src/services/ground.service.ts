@@ -2,6 +2,17 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+
+// type CreateGroundInput = {
+//   groundName: string;
+//   location: string;
+//   description?: string;
+//   type: string;
+//   media?: string;
+//   availability?: boolean;
+//   rating?: number;
+//   totalPeopleRated?: number;
+// };
 /**
  * Create a ground
  */
@@ -16,7 +27,6 @@ const createGround = async (data: {
     data,
   });
 };
-
 /**
  * Add slots to a ground
  */

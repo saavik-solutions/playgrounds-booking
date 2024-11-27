@@ -8,7 +8,7 @@ import { groundServices } from '../services/ground.service';
  */
 const createGround = catchAsync(async (req, res) => {
   const ground = await groundServices.createGround(req.body);
-  res.status(httpStatus.CREATED).send(ground);
+  res.status(httpStatus.CREATED).send({ success: true, data: ground });
 });
 
 /**
