@@ -8,27 +8,26 @@ const router = Router();
 
 // -- Ground Routes --
 router.post('/', groundController.createGround)
-// // Get all grounds
-// router.get('/', auth('getUsers'), groundController.getAllGrounds);
+// Get all grounds
+router.get('/', auth('getUsers'), groundController.getAllGrounds);
 
-// router.post(
-//   '/',
-//   // auth('manageUsers'), // Only 'admin' can manage grounds
-//   validateRequest(groundValidation.groundSchema), // Validate body data using Zod
-//   groundController.createGround
-// );
+router.post(
+  '/',
+  auth('manageUsers'), 
+  validateRequest(groundValidation.groundSchema), 
+  groundController.createGround
+);
 
-// router.put(
-//   '/:id',
-//   auth('manageUsers'), // Only 'admin' can update grounds
-//   validateRequest(groundValidation.groundSchema), // Validate body data using Zod
-//   groundController.updateGround
-// );
+router.put(
+  '/:id',
+  auth('manageUsers'), // Only 'admin' can update grounds
+  validateRequest(groundValidation.groundSchema), // Validate body data using Zod
+  groundController.updateGround
+);
 
-// // Delete a ground
-// router.delete('/:id', auth('manageUsers'), groundController.deleteGround);
+// Delete a ground
+router.delete('/:id', auth('manageUsers'), groundController.deleteGround);
 
-// Add slots to a ground (optional validation can be added here)
-// router.post('/:groundId/slots', auth('manageUsers'), groundController.addSlotsToGround);
+router.post('/:groundId/slots', auth('manageUsers'), groundController.addSlotsToGround);
 
 export default router;
