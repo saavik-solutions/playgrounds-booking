@@ -14,7 +14,7 @@ router
     userController.createUser
   )
   .get(
-    // auth('getUsers'), // Optional: Add role-based access control
+    // auth('getUsers'), 
     validateRequest(userValidation.getUsers),
     userController.getUsers
   );

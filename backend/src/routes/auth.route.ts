@@ -24,7 +24,7 @@ router.post(
 // Logout route (requires authentication)
 router.post(
   '/logout', 
-  auth(), // Ensure user is authenticated
+  auth(), 
   validateRequest(authValidation.logout), // Validate logout input
   authController.logout
 );
@@ -54,21 +54,21 @@ router.post(
 // Forgot password route
 router.post(
   '/forgot-password', 
-  validateRequest(authValidation.forgotPassword), // Validate forgot password input
+  validateRequest(authValidation.forgotPassword), 
   authController.forgotPassword
 );
 
 // Reset password route
 router.post(
   '/reset-password', 
-  validateRequest(authValidation.resetPassword), // Validate reset password input
+  validateRequest(authValidation.resetPassword), 
   authController.resetPassword
 );
 
 // Verify email route
 router.get(
   '/verify-email', 
-  validateRequest(authValidation.verifyEmail), // Validate email verification input
+  validateRequest(authValidation.verifyEmail), 
   authController.verifyEmail
 );
 
