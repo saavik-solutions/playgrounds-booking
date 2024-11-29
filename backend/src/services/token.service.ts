@@ -68,7 +68,7 @@ const verifyToken = async (token: string, type: TokenTypes): Promise<Token> => {
   try {
     const payload = jwt.verify(token, config.jwt.secret) as TokenPayload;
 
-    const tokenDoc = await TokenModel.getTokenByUserAndType(Number(payload.sub), type); // Adjust `sub` to number if needed
+    const tokenDoc = await TokenModel.getTokenByUserAndType(Number(payload.sub), type);
 
     if (!tokenDoc || tokenDoc.blacklisted) {
       throw new ApiError('Invalid or expired token', httpStatus.UNAUTHORIZED);
@@ -80,9 +80,11 @@ const verifyToken = async (token: string, type: TokenTypes): Promise<Token> => {
   }
 };
 
+
 /**
  * Generate authentication tokens (access and refresh tokens)
  */
+
 const generateAuthTokens = async (user: { id: string | number }): Promise<AuthTokens> => {
   const accessTokenExpires = moment().add(config.jwt.accessExpirationMinutes, 'minutes');
   const refreshTokenExpires = moment().add(config.jwt.refreshExpirationDays, 'days');
@@ -105,6 +107,18 @@ const generateAuthTokens = async (user: { id: string | number }): Promise<AuthTo
       expires: refreshTokenExpires.toDate(),
     },
   };
+};
+
+
+const generateJwtToken = (user: any) => {
+  const payload = {
+    sub: user.id,  // 'sub' is typically used for the user ID
+    name: user.name, // Optional: other user information you may want to include in the token
+  };
+
+  return jwt.sign(payload, config.jwt.secret, {
+    expiresIn: config.jwt.accessExpirationMinutes * 60, // Expiry time for the access token
+  });
 };
 
 
@@ -144,8 +158,7 @@ const blacklistToken = async (tokenId: string): Promise<Token> => {
   }
 
   tokenDoc.blacklisted = true;
-  await TokenModel.updateToken(tokenDoc.id, { blacklisted: true }); // Assuming you have an update method
-
+  await TokenModel.updateToken(tokenDoc.id, { blacklisted: true });
   return tokenDoc;
 };
 
@@ -158,5 +171,6 @@ export const tokenService = {
   generateAuthTokens,
   generateResetPasswordToken,
   generateVerifyEmailToken,
-  blacklistToken
+  blacklistToken,
+  generateJwtToken
 };

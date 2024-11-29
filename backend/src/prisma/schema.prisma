@@ -19,17 +19,17 @@ model User {
   id              Int        @id @default(autoincrement())
   name            String?
   email           String?    @unique
-  phone           String?    @unique  // Optional and unique for users signing in via phone
-  phoneVerified   Boolean    @default(false) // Flag to indicate phone verification status
+  phone           String?    @unique  
+  phoneVerified   Boolean    @default(false)
   password        String?
   role            String     @default("user")
-  googleId        String?    @unique  // For Google Sign-In
+  googleId        String?    @unique  
   isEmailVerified Boolean    @default(false)
-  verificationCode String?   // Temporary field for storing OTP (optional)
+  verificationCode String?   
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
   bookings        Booking[]
-  tokens          Token[]    // Add relation to Token model
+  tokens          Token[]    
 }
 
 

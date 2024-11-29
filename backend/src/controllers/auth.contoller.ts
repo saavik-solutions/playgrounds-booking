@@ -7,29 +7,86 @@ import { authService, userService, tokenService, emailService } from '../service
  * Register a new user
  */
 const register = catchAsync(async (req: Request, res: Response) => {
-  const user = await userService.createUser(req.body); // Prisma user creation
-  const tokens = await tokenService.generateAuthTokens(user); // Generate JWT tokens
-  res.status(httpStatus.CREATED).send({ user, tokens });
+  const user = await userService.createUser(req.body); // Create a new user
+  const tokens = await tokenService.generateAuthTokens(user); // Generate tokens
+
+  // Set accessToken and refreshToken as cookies
+  res.cookie('accessToken', tokens.access.token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    expires: tokens.access.expires,
+  });
+
+  res.cookie('refreshToken', tokens.refresh.token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    expires: tokens.refresh.expires,
+  });
+
+  res.status(httpStatus.CREATED).send({ user });
 });
+
 
 /**
  * Login a user with email and password
  */
 const login = catchAsync(async (req: Request, res: Response) => {
   const { email, password } = req.body;
-  const user = await authService.loginWithEmailAndPassword(email, password); // User login
-  const tokens = await tokenService.generateAuthTokens(user); 
-  res.status(httpStatus.OK).send({ user, tokens });
+
+  // Authenticate user
+  const user = await authService.loginWithEmailAndPassword(email, password);
+
+  // Generate tokens
+  const tokens = await tokenService.generateAuthTokens(user);
+
+  // Set cookies
+  res.cookie('accessToken', tokens.access.token, {
+    httpOnly: true, // Prevent access from JavaScript
+    secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+    sameSite: 'strict', // Prevent CSRF attacks
+    expires: tokens.access.expires, // Expiration for access token
+  });
+
+  res.cookie('refreshToken', tokens.refresh.token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    expires: tokens.refresh.expires, // Expiration for refresh token
+  });
+
+  res.status(httpStatus.OK).send({ user }); 
 });
 
 /**
  * Logout user by blacklisting refresh token
  */
 const logout = catchAsync(async (req: Request, res: Response) => {
-  const { refreshToken } = req.body;
+  const refreshToken = req.cookies.refreshToken; // Retrieve refreshToken from cookies
+
+  if (!refreshToken) {
+    res.status(httpStatus.BAD_REQUEST).send({ message: 'Refresh token is missing' });
+    return; // Ensure no Response object is returned
+  }
+
   await authService.logout(refreshToken); // Blacklist the refresh token
-  res.status(httpStatus.NO_CONTENT).send(); // No content on successful logout
+
+  // Clear the cookies
+  res.clearCookie('accessToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  });
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  });
+
+  res.status(httpStatus.NO_CONTENT).send(); // End the request
 });
+
 
 /**
  * Refresh authentication tokens (access and refresh tokens)

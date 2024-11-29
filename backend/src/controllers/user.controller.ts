@@ -6,7 +6,7 @@ import catchAsync from '../utils/catchAsync';
 import { userService } from '../services';
 import { User as PrismaUser } from '@prisma/client';
 import { paginate } from '../prismaClient'; 
-
+import {tokenService} from '../services';
 type UserFilter = {
   name?: string;
   role?: string;
@@ -18,9 +18,38 @@ type UserQueryOptions = {
   page?: number;
 };
 const createUser = catchAsync(async (req: Request, res: Response) => {
+  // Step 1: Create the user using the provided request body
   const user = await userService.createUser(req.body);
-  res.status(httpStatus.CREATED).send(user);
+  
+  // Step 2: Generate the access and refresh tokens for the user
+  const { access, refresh } = await tokenService.generateAuthTokens({ id: user.id });
+  
+  // Step 3: Set the tokens as cookies in the response
+  res.cookie('accessToken', access.token, {
+    httpOnly: true, 
+    secure: process.env.NODE_ENV === 'production', 
+    sameSite: 'strict',
+    expires: access.expires,
+  });
+
+  res.cookie('refreshToken', refresh.token, {
+    httpOnly: true, 
+    secure: process.env.NODE_ENV === 'production', 
+    sameSite: 'strict',
+    expires: refresh.expires, 
+  });
+
+
+  res.status(httpStatus.CREATED).send({
+    message: 'User created successfully',
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name, // Include any other non-sensitive user data
+    },
+  });
 });
+
 
 const getUsers = catchAsync(async (req: Request, res: Response) => {
   const filter: UserFilter = pick(req.query, ['name', 'role']);
@@ -32,7 +61,7 @@ const getUsers = catchAsync(async (req: Request, res: Response) => {
     page: req.query.page ? Number(req.query.page) : undefined,
   };
   
-  // Use the paginate function from your prismaClient utility
+  
   const result = await paginate<PrismaUser>('user', filter, options);
   res.send(result);
 });
