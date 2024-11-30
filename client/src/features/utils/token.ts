@@ -1,6 +1,6 @@
 import { jwtDecode } from 'jwt-decode';
 import { storage } from './storage';
-import { TokenError } from './errors';
+import { TokenError } from '../../lib/auth/errors';
 
 interface DecodedToken {
   exp: number;

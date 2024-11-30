@@ -2,15 +2,15 @@
 
 import { useState, useEffect, createContext, useContext } from 'react';
 import { useRouter } from 'next/navigation';
-import { api } from '../api/axios';
-import { setTokens, clearTokens, getAccessToken } from './token';
+import { api } from '../../lib/api/axios';
+import { setTokens, clearTokens, getAccessToken } from '../utils/token';
 import type { LoginInput, RegisterInput } from '../schemas/auth';
 
 interface User {
   id: string;
   name: string;
   email: string;
-}a
+}
 
 interface AuthContextType {
   user: User | null;

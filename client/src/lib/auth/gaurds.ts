@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import { AUTH_ROUTES } from './constants';
+import { AUTH_ROUTES } from '../../features/utils/constants';
 
 export async function requireAuth() {
   const cookieStore =await cookies();

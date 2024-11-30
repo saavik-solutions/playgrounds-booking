@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { AUTH_ERRORS } from '@/lib/auth/constants';
+import { AUTH_ERRORS } from '@/features/utils/constants';
 import { ZodError } from 'zod';
 
 type APIHandler = (...args: unknown[]) => Promise<NextResponse>;

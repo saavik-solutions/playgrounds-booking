@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { KeyRound } from "lucide-react";
-import { Input } from "../ui/Input";
-import { Button } from "../ui/Button";
+import { Input } from "../../components/ui/Input";
+import { Button } from "../../components/ui/Button";
 import Link from "next/link";
 import { toast } from "sonner";
 

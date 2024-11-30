@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "../ui/Button";
+import { Button } from "../../components/ui/Button";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
