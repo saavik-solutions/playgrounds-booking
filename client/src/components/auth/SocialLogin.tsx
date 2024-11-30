@@ -51,10 +51,12 @@ export function SocialLogin() {
         onClick={handleGoogleSignIn}
       >
         <Image
-          src="https://www.google.com/favicon.ico"
-          alt="Google"
-          className="w-5 h-5 mr-3"
-        />
+  src="https://www.google.com/favicon.ico"
+  alt="Google"
+  width={20}  // Set the width of the image
+  height={20} // Set the height of the image
+  className="mr-3"
+/>
         Sign in with Google
       </Button>
     </div>
