@@ -2,7 +2,7 @@ import { ResetPasswordForm } from "@/components/auth/ResetPasswordForm";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Reset Password | Authentication System",
+  title: "Reset Password | React Sports Club",
   description: "Reset your password",
 };
 

@@ -12,9 +12,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={clsx(
-          'flex items-center justify-center px-6 py-3 rounded-full font-medium transition-all transform hover:scale-105',
+          'flex items-center justify-center px-4 py-2 sm:px-6 sm:py-3 rounded-full font-medium transition-all transform hover:scale-105',
           'focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed',
-          'text-base sm:text-lg',
+          'text-sm sm:text-base', // Adjusted text size for mobile-first
           {
             'bg-gradient-to-r from-[#0053a7] to-[#0077b6] text-white shadow-lg hover:shadow-xl focus:ring-[#0053a7]':
               variant === 'primary',
@@ -28,7 +28,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {isLoading ? (
-          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
         ) : (
           children
         )}

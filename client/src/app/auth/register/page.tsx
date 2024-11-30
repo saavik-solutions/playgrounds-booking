@@ -2,7 +2,7 @@ import { RegisterForm } from "@/components/auth/RegisterForm";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Register | Authentication System",
+  title: "Register | React Sports Club",
   description: "Create a new account",
 };
 

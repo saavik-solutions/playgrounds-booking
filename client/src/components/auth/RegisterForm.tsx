@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { UserPlus } from "lucide-react";
 import { Input } from "../ui/Input";
 import { Button } from "../ui/Button";
 import { SocialLogin } from "./SocialLogin";
@@ -41,22 +40,21 @@ export function RegisterForm() {
         toast.error(data.message || "Registration failed. Please try again.");
       }
     } catch (error) {
-  toast.error(error instanceof Error ? error.message : "Something went wrong");
-}
-finally {
+      toast.error(error instanceof Error ? error.message : "Something went wrong");
+    } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="w-full max-w-md p-6 sm:p-8 bg-white rounded-2xl shadow-lg">
-      <div className="flex flex-col items-center mb-8">
-        <UserPlus className="w-16 h-16 text-[#0053a7] mb-4" />
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center">Create an account</h1>
-        <p className="text-gray-600 text-center mt-2">Join us today</p>
+    <div className="w-full max-w-md p-4 sm:p-6 bg-white rounded-2xl shadow-lg">
+      <div className="flex flex-col items-center mb-6">
+        <h1 className="text-lg sm:text-2xl font-semibold text-gray-900 text-center">
+          Create an account
+        </h1>
       </div>
 
-      <form className="space-y-6" onSubmit={handleSubmit}>
+      <form className="space-y-4" onSubmit={handleSubmit}>
         <Input
           label="Name"
           type="text"
@@ -86,9 +84,9 @@ finally {
           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
         />
 
-        <label className="flex items-center">
-          <input type="checkbox" className="w-5 h-5 text-[#0053a7] rounded" required />
-          <span className="ml-3 text-sm text-gray-600">
+        <label className="flex items-center text-xs sm:text-sm">
+          <input type="checkbox" className="w-4 h-4 text-[#0053a7] rounded" required />
+          <span className="ml-2 text-gray-600">
             I agree to the{' '}
             <Link href="/terms" className="text-[#0053a7] hover:underline">
               Terms
@@ -105,13 +103,13 @@ finally {
         </Button>
       </form>
 
-      <div className="mt-8">
+      <div className="mt-6">
         <SocialLogin />
       </div>
 
-      <p className="mt-8 text-center text-base text-gray-600">
+      <p className="mt-6 text-center text-xs sm:text-sm text-gray-600">
         Already have an account?{' '}
-        <Link href="/login" className="text-[#0053a7] font-medium hover:underline">
+        <Link href="auth/login" className="text-[#0053a7] font-medium hover:underline">
           Sign in
         </Link>
       </p>
