@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { AUTH_ROUTES } from './constants';
 
 export async function requireAuth() {
-  const cookieStore = cookies();
+  const cookieStore =await cookies();
   const token = cookieStore.get('access_token');
 
   if (!token) {
@@ -12,7 +12,7 @@ export async function requireAuth() {
 }
 
 export async function requireGuest() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const token = cookieStore.get('access_token');
 
   if (token) {
