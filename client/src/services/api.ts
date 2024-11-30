@@ -1,6 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { getAccessToken, refreshAccessToken } from '../../features/utils/token';
-import { NetworkError } from '../auth/errors';
+import { getAccessToken, refreshAccessToken } from '../features/utils/token';
+import { NetworkError } from '../lib/auth/errors';
 
 // Extend InternalAxiosRequestConfig to include `_retry`
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {

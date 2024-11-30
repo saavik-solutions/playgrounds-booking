@@ -2,7 +2,7 @@
 
 import { useState, useEffect, createContext, useContext } from 'react';
 import { useRouter } from 'next/navigation';
-import { api } from '../../lib/api/axios';
+import { api } from '../../services/api';
 import { setTokens, clearTokens, getAccessToken } from '../utils/token';
 import type { LoginInput, RegisterInput } from '../schemas/auth';
 
