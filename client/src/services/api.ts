@@ -2,7 +2,7 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { getAccessToken, refreshAccessToken } from '../features/utils/token';
 import { NetworkError } from '../lib/auth/errors';
 
-// Extend InternalAxiosRequestConfig to include `_retry`
+
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
 }
@@ -18,7 +18,7 @@ export const api = axios.create({
   timeout: 10000,
 });
 
-// Request Interceptor
+
 api.interceptors.request.use(
   async (config) => {
     const token = getAccessToken();

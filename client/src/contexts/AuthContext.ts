@@ -1,10 +1,16 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { loginService, registerService, logoutService, fetchUser } from "../features/auth/services/authService";
-import { getAccessToken, setTokens, clearTokens } from "../features/auth/utils/token";
-import type { LoginInput, RegisterInput, User } from "../features/auth/types";
+import { useState, useEffect, createContext, useContext,ReactNode  } from 'react';
+import { useRouter } from 'next/navigation';
+import { api } from '../services/api';
+import { setTokens, clearTokens, getAccessToken } from '../features/utils/token';
+import type { LoginInput, RegisterInput } from '../features/schemas/auth';
+// Define the User and Context types
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
 
 interface AuthContextType {
   user: User | null;
@@ -15,18 +21,20 @@ interface AuthContextType {
   logout: () => Promise<void>;
 }
 
+// Create the AuthContext
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+// AuthProvider component
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const router = useRouter();
 
   useEffect(() => {
-    initializeAuth();
+    checkAuth();
   }, []);
 
-  const initializeAuth = async () => {
+  const checkAuth = async () => {
     try {
       const token = getAccessToken();
       if (!token) {
@@ -34,9 +42,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const userData = await fetchUser();
-      setUser(userData);
-    } catch {
+      const { data } = await api.get('/api/auth/me');
+      setUser(data.user);
+    } catch (error) {
       clearTokens();
     } finally {
       setIsLoading(false);
@@ -44,37 +52,64 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const login = async (credentials: LoginInput) => {
-    const { user, tokens } = await loginService(credentials);
-    setTokens(tokens.accessToken, tokens.refreshToken);
-    setUser(user);
-    router.push("/dashboard");
+    try {
+      const { data } = await api.post('/api/auth/login', credentials);
+      setTokens(data.accessToken, data.refreshToken);
+      setUser(data.user);
+      router.push('/dashboard');
+    } catch (error: any) {
+      if (error.response?.status === 429) {
+        throw new Error('Too many attempts. Please try again later.');
+      }
+      throw new Error(error.response?.data?.message || 'Invalid credentials');
+    }
   };
 
-  const register = async (data: RegisterInput) => {
-    const { user, tokens } = await registerService(data);
-    setTokens(tokens.accessToken, tokens.refreshToken);
-    setUser(user);
-    router.push("/dashboard");
+  const register = async (userData: RegisterInput) => {
+    try {
+      const { data } = await api.post('/api/auth/register', userData);
+      setTokens(data.accessToken, data.refreshToken);
+      setUser(data.user);
+      router.push('/dashboard');
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Registration failed');
+    }
   };
 
   const logout = async () => {
-    await logoutService();
-    clearTokens();
-    setUser(null);
-    router.push("/login");
+    try {
+      await api.post('/api/auth/logout');
+    } finally {
+      clearTokens();
+      setUser(null);
+      router.push('/login');
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, login, register, logout }}>
-      {children}
-    </AuthContext.Provider>
+    // <AuthContext.Provider
+    //   value={{
+    //     user,
+    //     isLoading,
+    //     isAuthenticated: !!user,
+    //     login,
+    //     register,
+    //     logout,
+    //   }}
+    // >
+    //   {children}
+      // </AuthContext.Provider>
+      <>
+      
+      </>
   );
-}
+};
 
-export function useAuth() {
+// Custom hook to use the AuthContext
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-}
+};

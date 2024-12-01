@@ -1,5 +1,5 @@
 import { api } from "../../../services/api";
-import type { LoginInput, RegisterInput, User } from "../types";
+import type { LoginInput, RegisterInput, User } from "../types/types";
 
 interface AuthResponse {
   user: User;

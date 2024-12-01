@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/features/hooks/useAuth';
+import { useAuth } from '../../contexts/AuthContext';
 
 export function useProtectedRoute() {
   const { isAuthenticated, isLoading } = useAuth();
