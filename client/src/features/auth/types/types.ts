@@ -1,54 +1,29 @@
-// features/types.ts
 
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-}
-export interface AuthState {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-}
-
-export interface LoginInput {
-  email: string;
+export interface LoginPayload {
+  username: string;
   password: string;
 }
 
-export interface RegisterInput {
-  name: string;
-  email: string;
-  password: string;
-}
-
-export interface ResetPasswordData {
-  email: string;
-}
-
-export interface AuthResponse {
+export interface LoginResponse {
   accessToken: string;
   refreshToken: string;
-  user: User;
 }
 
-export interface AuthRequest {
+export interface RegisterPayload {
+  username: string;
   email: string;
   password: string;
 }
 
-export interface TokenData {
-  userId: string;
-  exp: number;
-  iat: number;
-}
-
-export interface RefreshTokenResponse {
-  accessToken: string;
-}
-
-export interface AuthError {
+export interface RegisterResponse {
   message: string;
-  code: number;
+}
+
+export interface ResetPasswordPayload {
+  token: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+export interface ForgotPasswordPayload {
+  email: string;
 }

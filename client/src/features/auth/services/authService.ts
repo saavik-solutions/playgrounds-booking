@@ -1,30 +1,91 @@
-import { api } from "../../../services/api";
-import type { LoginInput, RegisterInput, User } from "../types/types";
+import { API_ENDPOINTS } from '../../../core/constants';
+import { api } from '../../../services/api';
+import {
 
-interface AuthResponse {
-  user: User;
-  tokens: { accessToken: string; refreshToken: string };
-}
+  LoginPayload,
+  RegisterPayload,
+  ForgotPasswordPayload,
+  ResetPasswordPayload,
+} from '../types/types';
+import {
+  AuthResponse
+  
+} from '../../../core/types/Auth';
+import { getRefreshToken, setTokens, clearTokens } from '../../../utils/token';
 
-// Login Service
-export async function loginService(credentials: LoginInput): Promise<AuthResponse> {
-  const { data } = await api.post("/api/auth/login", credentials);
-  return data;
-}
+export const authService = {
+  /**
+   * Login user
+   * @param payload - User credentials
+   */
+  async login(payload: LoginPayload): Promise<void> {
+    const response = await api.post<AuthResponse>(API_ENDPOINTS.AUTH.LOGIN, payload);
+    const { accessToken, refreshToken } = response.data;
+    setTokens(accessToken, refreshToken); 
+  },
 
-// Register Service
-export async function registerService(userData: RegisterInput): Promise<AuthResponse> {
-  const { data } = await api.post("/api/auth/register", userData);
-  return data;
-}
+  /**
+   * Register a new user
+   * @param payload - User registration details
+   */
+  async register(payload: RegisterPayload): Promise<void> {
+    const response = await api.post<AuthResponse>(API_ENDPOINTS.AUTH.REGISTER, payload);
+    const { accessToken, refreshToken } = response.data;
+    setTokens(accessToken, refreshToken); 
+  },
 
-// Fetch Current User
-export async function fetchUser(): Promise<User> {
-  const { data } = await api.get("/api/auth/me");
-  return data.user;
-}
+  /**
+   * Refresh access token using refresh token
+   */
+  async refreshAccessToken(): Promise<void> {
+    const refreshToken = getRefreshToken(); // Get refresh token from cookies
+    if (!refreshToken) {
+      throw new Error('No refresh token available');
+    }
 
-// Logout Service
-export async function logoutService(): Promise<void> {
-  await api.post("/api/auth/logout");
-}
+    const response = await api.post<AuthResponse>(API_ENDPOINTS.AUTH.REFRESH_TOKEN, { refreshToken });
+    const { accessToken, newRefreshToken } = response.data;
+   if (!accessToken || !newRefreshToken) {
+        throw new Error('Invalid tokens received');
+    }
+    setTokens(accessToken, newRefreshToken); 
+  },
+
+  /**
+   * Logout the user
+   */
+  async logout(): Promise<void> {
+    try {
+      await api.post(API_ENDPOINTS.AUTH.LOGOUT);
+    } finally {
+      clearTokens(); // Clear tokens from cookies
+    }
+  },
+
+  /**
+   * Google Logout
+   */
+  async googleLogout(): Promise<void> {
+    try {
+      await api.post(API_ENDPOINTS.AUTH.GOOGLE_LOGOUT);
+    } finally {
+      clearTokens(); // Clear tokens from cookies
+    }
+  },
+
+  /**
+   * Request a password reset link
+   * @param payload - User email
+   */
+  async forgotPassword(payload: ForgotPasswordPayload): Promise<void> {
+    await api.post(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, payload);
+  },
+
+  /**
+   * Reset the user's password
+   * @param payload - Password reset details
+   */
+  async resetPassword(payload: ResetPasswordPayload): Promise<void> {
+    await api.post(API_ENDPOINTS.AUTH.RESET_PASSWORD, payload);
+  },
+};

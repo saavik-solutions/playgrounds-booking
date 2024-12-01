@@ -3,11 +3,7 @@ import { TokenError } from '../core/errors/TokenError';
 import Cookies from 'js-cookie'; // Ensure you install this: `npm install js-cookie`
 import { API_ENDPOINTS,COOKIES } from '../core/constants';
 import { api } from '../services/api';
-interface DecodedToken {
-  exp: number;
-  sub: string;
-  roles: string[]; 
-}
+import { DecodedToken } from '@/core/types/token';
 
 const COOKIE_OPTIONS = {
   path: COOKIES.DEFAULT_PATH,
@@ -46,7 +42,18 @@ export const isTokenExpired = (token: string): boolean => {
     return true;
   }
 };
-
+export const getRolesFromToken = (token: string): string[] => {
+  try {
+    const decoded = jwtDecode<DecodedToken>(token); // Decode the JWT
+    if (decoded && decoded.roles) {
+      return decoded.roles; // Return the roles array
+    } else {
+      throw new TokenError('No roles found in the token');
+    }
+  } catch  {
+    throw new TokenError('Failed to decode token or retrieve roles');
+  }
+};
 // Refresh the access token using the refresh token
 export const refreshAccessToken = async (): Promise<string> => {
   const refreshToken = getRefreshToken();

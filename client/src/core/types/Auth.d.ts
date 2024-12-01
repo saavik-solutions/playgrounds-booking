@@ -10,6 +10,7 @@ export interface User {
 export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
+ newRefreshToken?: string;
 }
 
 export interface AuthError {

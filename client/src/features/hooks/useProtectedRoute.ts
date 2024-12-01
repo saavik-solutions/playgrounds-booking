@@ -2,17 +2,26 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../../contexts/AuthContext';
+import { getAccessToken, isTokenExpired,getRolesFromToken } from '../../utils/token';
 
-export function useProtectedRoute() {
-  const { isAuthenticated, isLoading } = useAuth();
+export function useProtectedRoute(requiredRoles?: string[]) {
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    const token = getAccessToken();
+    if (!token || isTokenExpired(token)) {
       router.replace('/login');
+      return;
     }
-  }, [isAuthenticated, isLoading, router]);
 
-  return { isLoading };
+    if (requiredRoles) {
+      const roles = getRolesFromToken(token);
+      const hasAccess = requiredRoles.some((role) => roles.includes(role));
+      if (!hasAccess) {
+        router.replace('/403'); // Access Denied
+      }
+    }
+  }, [router, requiredRoles]);
+
+  return { isLoading: false }; // You can add isLoading logic if needed
 }

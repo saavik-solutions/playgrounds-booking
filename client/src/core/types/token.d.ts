@@ -5,3 +5,9 @@ export interface CookieOptions {
     secure?: boolean; // HTTPS-only
     sameSite?: "Strict" | "Lax" | "None";
 }
+
+export interface DecodedToken {
+  exp: number;
+  sub: string;
+  roles: string[]; 
+}
