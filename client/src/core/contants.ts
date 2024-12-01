@@ -43,3 +43,8 @@ export const SUCCESS_MESSAGES = {
   LOGIN_SUCCESS: 'Login successful.',
   REGISTRATION_SUCCESS: 'Registration successful.',
 };
+export const COOKIES = {
+    AUTH_TOKEN: "authToken", 
+    REFRESH_TOKEN: "refreshToken", 
+    DEFAULT_PATH: "/", 
+};

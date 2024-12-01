@@ -3,7 +3,7 @@
 import { useState, useEffect, createContext, useContext,ReactNode  } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '../services/api';
-import { setTokens, clearTokens, getAccessToken } from '../features/utils/token';
+import { setTokens, clearTokens, getAccessToken } from '../utils/token';
 import type { LoginInput, RegisterInput } from '../features/schemas/auth';
 // Define the User and Context types
 interface User {

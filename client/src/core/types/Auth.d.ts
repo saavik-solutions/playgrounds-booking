@@ -4,7 +4,7 @@ export interface User {
   id: string;
   username: string;
   email: string;
-  role: 'admin' | 'user'; // You can expand roles as needed
+  role: 'admin' | 'user'; 
 }
 
 export interface AuthResponse {
