@@ -1,6 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { getAccessToken, refreshAccessToken } from '../utils/token';
-import { NetworkError } from '../lib/auth/errors';
+import { NetworkError } from '../core/errors/NetworkError';
 
 
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
