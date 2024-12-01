@@ -28,7 +28,7 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
-    // Wrap request errors in custom NetworkError
+    
     return Promise.reject(new NetworkError(error.message));
   }
 );
@@ -43,7 +43,7 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Handle rate limiting (status code 429)
+    
     if (error.response?.status === 429) {
       return Promise.reject(
         new NetworkError('Too many requests. Please try again later.')
@@ -59,12 +59,12 @@ api.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${token}`;
         return api(originalRequest); // Retry the original request with the new token
       } catch (refreshError) {
-        // Token refresh failed, reject the promise
+       
         return Promise.reject(refreshError);
       }
     }
 
-    // For all other errors, reject the promise
+    
     return Promise.reject(error);
   }
 );

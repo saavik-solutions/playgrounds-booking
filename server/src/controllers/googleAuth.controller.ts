@@ -32,7 +32,7 @@ const handleGoogleAuth = catchAsync(async (req: Request, res: Response) => {
     // Clear the cookies
     res.clearCookie('accessToken', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // ensure secure cookie in production
+      secure: process.env.NODE_ENV === 'production', 
       sameSite: 'strict',
     });
 

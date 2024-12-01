@@ -23,7 +23,7 @@ router.post(
 
 // Logout route (requires authentication)
 router.post(
-  '/logout', 
+  '/logout/email', 
   auth(), 
   validateRequest(authValidation.logout), // Validate logout input
   authController.logout
@@ -42,7 +42,7 @@ router.get(
   googleAuthController.handleGoogleAuth
 );
 
-router.post('/google/logout', googleAuthController.logout);
+router.post('/logout/google', googleAuthController.logout);
 
 
 router.post(

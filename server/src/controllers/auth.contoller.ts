@@ -63,14 +63,14 @@ const login = catchAsync(async (req: Request, res: Response) => {
  * Logout user by blacklisting refresh token
  */
 const logout = catchAsync(async (req: Request, res: Response) => {
-  const refreshToken = req.cookies.refreshToken; // Retrieve refreshToken from cookies
+  const refreshToken = req.cookies.refreshToken; 
 
   if (!refreshToken) {
     res.status(httpStatus.BAD_REQUEST).send({ message: 'Refresh token is missing' });
     return; // Ensure no Response object is returned
   }
 
-  await authService.logout(refreshToken); // Blacklist the refresh token
+  await authService.logout(refreshToken);
 
   // Clear the cookies
   res.clearCookie('accessToken', {
@@ -84,7 +84,7 @@ const logout = catchAsync(async (req: Request, res: Response) => {
     sameSite: 'strict',
   });
 
-  res.status(httpStatus.NO_CONTENT).send(); // End the request
+  res.status(httpStatus.NO_CONTENT).send(); 
 });
 
 
