@@ -61,6 +61,28 @@ export const authService = {
       clearTokens(); // Clear tokens from cookies
     }
   },
+async googleLogin(): Promise<void> {
+  try {
+    // Redirect user to Google OAuth endpoint in the backend
+    const response = await api.get<AuthResponse>(API_ENDPOINTS.AUTH.GOOGLE_LOGIN);
+
+    // Extract tokens from the response
+    const { accessToken, refreshToken } = response.data;
+
+    if (!accessToken || !refreshToken) {
+      throw new Error("Invalid tokens received from Google Login");
+    }
+
+    // Set tokens for future API requests
+    setTokens(accessToken, refreshToken);
+  } catch (error) {
+    throw new Error(
+      error instanceof Error
+        ? error.message
+        : "An error occurred during Google Login"
+    );
+  }
+},
 
   /**
    * Google Logout
