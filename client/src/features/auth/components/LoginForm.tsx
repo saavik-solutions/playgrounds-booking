@@ -15,7 +15,7 @@ import { OAuthButtons } from "@/components/auth/oauth-buttons"
 import { useToast } from "../../hooks/use-toast"
 import { authService } from "../services/authService"
 
-export default function LoginPage() {
+export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
 
