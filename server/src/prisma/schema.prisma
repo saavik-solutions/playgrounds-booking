@@ -22,7 +22,7 @@ model User {
   phone           String?    @unique  
   phoneVerified   Boolean    @default(false)
   password        String?
-  role            String     @default("user")
+  role            String?     @default("user")
   googleId        String?    @unique  
   isEmailVerified Boolean    @default(false)
   verificationCode String?   

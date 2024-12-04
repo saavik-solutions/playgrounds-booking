@@ -5,6 +5,7 @@ import { userService } from '../services'; // Corrected to userService
 import { tokenService } from '../services'; // Assuming tokenService is exported
 import { TokenTypes } from '../config/token'; // Ensure TokenTypes is properly exported
 import { User } from '../models';
+import { toJSON } from '../models/plugins';
 
 /**
  * Authenticate a user by email and password
@@ -29,7 +30,7 @@ const loginWithEmailAndPassword = async (email: string, password: string) => {
     throw new ApiError('Invalid email or password', httpStatus.UNAUTHORIZED);
   }
 
-  return user;
+  return toJSON(user);
 };
 
 

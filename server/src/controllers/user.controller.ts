@@ -45,7 +45,8 @@ const createUser = catchAsync(async (req: Request, res: Response) => {
     user: {
       id: user.id,
       email: user.email,
-      name: user.name, // Include any other non-sensitive user data
+      name: user.name, 
+      role:user.role
     },
   });
 });

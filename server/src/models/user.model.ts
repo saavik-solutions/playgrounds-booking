@@ -33,7 +33,7 @@ const createUser = async (data: {
   name: string;
   email: string;
   password: string;
-  role?: string;
+  role: string;
 }): Promise<PrismaUser> => {
   const hashedPassword = await bcrypt.hash(data.password, 8);
   const createdUser = await prisma.user.create({
@@ -94,6 +94,7 @@ const createGoogleUser = async (data: {
   email?: string; // Allow undefined
   name?: string;
   googleId?: string;
+  role?: string;
 }) => {
   try {
     const user = await prisma.user.create({

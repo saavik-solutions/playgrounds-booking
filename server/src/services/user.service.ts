@@ -27,7 +27,7 @@ const createUser = async (data: {
   name: string;
   email: string;
   password: string;
-  role?: string;
+  role: string;
 }): Promise<PrismaUser> => {
   try {
     if (await isEmailTaken(data.email)) {
