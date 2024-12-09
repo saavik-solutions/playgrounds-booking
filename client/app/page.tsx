@@ -1,14 +1,8 @@
-export default function Home() {
-  return (
-    <div
-      style={{
-        maxWidth: 1280,
-        margin: '0 auto',
-        padding: '2rem',
-        textAlign: 'center',
-      }}
-    >
-      Start prompting.
-    </div>
-  );
+"use client";
+import { Provider } from "react-redux";
+import { store } from "./redux/store";
+import LoginForm from "@/features/auth/components/LoginForm";
+
+export default function Home({ Component, pageProps }: any) {
+  return <Provider store={store}>{<LoginForm {...pageProps} />}</Provider>;
 }
