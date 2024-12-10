@@ -10,15 +10,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/auth/password-input";
 import { OAuthButtons } from "@/components/auth/oauth-buttons";
-
-// import { useAuthContext } from "@/contexts/AuthContext";
+import { useLoginMutation } from "@/app/redux/services/auth";
 
 export default function LoginForm() {
-  // const { login } = useAuthContext();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{
+    email?: string;
+    password?: string;
+    general?: string;
+  }>({});
+
+  // RTK Query hook
+  const [login] = useLoginMutation();
 
   const validateForm = (): boolean => {
     const errors: { email?: string; password?: string } = {};
@@ -34,10 +39,16 @@ export default function LoginForm() {
 
     setIsLoading(true);
     try {
-      await login({ email, password });
-    } catch (error) {
+      const response = await login({ email, password }).unwrap();
+      // Handle successful login (e.g., store token, redirect)
+      console.log("Login successful:", response);
+      // Save token in local storage (optional)
+      localStorage.setItem("token", response.token);
+    } catch (error: any) {
       console.error("Login failed:", error);
-      setErrors({ email: "Invalid credentials or login failed." });
+      setErrors({
+        general: error.data?.message || "Invalid credentials or login failed.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -46,8 +57,12 @@ export default function LoginForm() {
   return (
     <div className="space-y-6">
       <div className="space-y-2 text-center">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Welcome back</h1>
-        <p className="text-gray-500 dark:text-gray-400">Sign in to your account</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+          Welcome back
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400">
+          Sign in to your account
+        </p>
       </div>
       <OAuthButtons isLoading={isLoading} />
       <div className="relative">
@@ -71,7 +86,9 @@ export default function LoginForm() {
             onChange={(e) => setEmail(e.target.value)}
             className={errors.email ? "border-red-500" : ""}
           />
-          {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
+          {errors.email && (
+            <p className="text-sm text-red-500">{errors.email}</p>
+          )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
@@ -80,11 +97,16 @@ export default function LoginForm() {
             placeholder="Enter your password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-             name="password"
+            name="password"
             error={errors.password}
           />
-          {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
+          {errors.password && (
+            <p className="text-sm text-red-500">{errors.password}</p>
+          )}
         </div>
+        {errors.general && (
+          <p className="text-sm text-red-500">{errors.general}</p>
+        )}
         <div className="flex items-center justify-between">
           <Link
             href="/forgot-password"
