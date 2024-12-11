@@ -10,7 +10,7 @@ const router = express.Router();
 // Register route
 router.post(
   '/register', 
-  validateRequest(authValidation.register), // Validate registration input
+  validateRequest(authValidation.register), 
   authController.register
 );
 

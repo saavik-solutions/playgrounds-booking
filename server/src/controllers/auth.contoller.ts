@@ -10,13 +10,8 @@ const register = catchAsync(async (req: Request, res: Response) => {
   const user = await userService.createUser(req.body); // Create a new user
   const tokens = await tokenService.generateAuthTokens(user); // Generate tokens
 
-  // Set accessToken and refreshToken as cookies
-  res.cookie('accessToken', tokens.access.token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    expires: tokens.access.expires,
-  });
+ 
+ res.setHeader('Authorization', `Bearer ${tokens.access.token}`);
 
   res.cookie('refreshToken', tokens.refresh.token, {
     httpOnly: true,
@@ -42,12 +37,7 @@ const login = catchAsync(async (req: Request, res: Response) => {
   const tokens = await tokenService.generateAuthTokens(user);
 
   // Set cookies
-  res.cookie('accessToken', tokens.access.token, {
-    httpOnly: true, // Prevent access from JavaScript
-    secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-    sameSite: 'strict', // Prevent CSRF attacks
-    expires: tokens.access.expires, // Expiration for access token
-  });
+ res.setHeader('Authorization', `Bearer ${tokens.access.token}`);;
 
   res.cookie('refreshToken', tokens.refresh.token, {
     httpOnly: true,
@@ -63,21 +53,31 @@ const login = catchAsync(async (req: Request, res: Response) => {
  * Logout user by blacklisting refresh token
  */
 const logout = catchAsync(async (req: Request, res: Response) => {
-  const refreshToken = req.cookies.refreshToken; 
+  const authorizationHeader = req.headers['authorization']; 
 
+  if (!authorizationHeader) {
+    res.status(httpStatus.BAD_REQUEST).send({ message: 'Authorization header is missing' });
+    return;
+  }
+
+  // Extract accessToken from the Authorization header
+  const accessToken = authorizationHeader.split(' ')[1]; // Extract token after "Bearer"
+  
+  if (!accessToken) {
+    res.status(httpStatus.BAD_REQUEST).send({ message: 'Access token is missing' });
+    return;
+  }
+
+  // Blacklist the refresh token (we'll still need it for logout functionality)
+  const refreshToken = req.cookies.refreshToken; 
   if (!refreshToken) {
     res.status(httpStatus.BAD_REQUEST).send({ message: 'Refresh token is missing' });
-    return; // Ensure no Response object is returned
+    return;
   }
 
   await authService.logout(refreshToken);
 
   // Clear the cookies
-  res.clearCookie('accessToken', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-  });
   res.clearCookie('refreshToken', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

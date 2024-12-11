@@ -80,6 +80,7 @@ const refreshAuth = async (refreshToken: string) => {
 const resetPassword = async (resetToken: string, newPassword: string) => {
   try {
     const resetTokenDoc = await tokenService.verifyToken(resetToken, TokenTypes.RESET_PASSWORD);
+
     const user = await userService.getUserById(resetTokenDoc.userId);
 
     if (!user) {
@@ -88,8 +89,11 @@ const resetPassword = async (resetToken: string, newPassword: string) => {
 
     // Hash the new password before saving
     const hashedPassword = await bcrypt.hash(newPassword, 10); 
+
     await userService.updateUser(user.id, { password: hashedPassword });
-    await tokenService.blacklistToken(String(resetTokenDoc.id)); // Blacklist the reset token
+
+    await tokenService.blacklistToken(String(resetTokenDoc.id));
+    // Blacklist the reset token
   } catch (error) {
     throw new ApiError('Error resetting password', httpStatus.INTERNAL_SERVER_ERROR);
   }

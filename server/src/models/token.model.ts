@@ -1,16 +1,13 @@
 import { PrismaClient, Token } from '@prisma/client';
 import { TokenTypes } from '../config/token';
+
 const prisma = new PrismaClient();
 
-// Define a toJSON function to sanitize the token data
 export const toJSON = <T extends Record<string, any>>(data: T): T => {
   const result = { ...data };
-
-  // Remove private fields, if marked (e.g., define a private fields array)
-  const privateFields = ['password']; // Add other private fields here
+  const privateFields = ['password'];
   privateFields.forEach((field) => delete result[field]);
-
-  // Remove metadata fields if present
+  
   delete result.__v;
   delete result.createdAt;
   delete result.updatedAt;
@@ -18,14 +15,23 @@ export const toJSON = <T extends Record<string, any>>(data: T): T => {
   return result;
 };
 
-// Update createToken to accept the blacklisted parameter
-const createToken = async (
-  userId: number,
-  token: string,
-  type: TokenTypes,
-  expires: Date,
-  blacklisted: boolean = false  // Make sure this parameter is included here
-): Promise<Token> => {
+interface TokenCreateInput {
+  userId: number;
+  token: string;
+  type: TokenTypes;
+  expires: Date;
+  blacklisted?: boolean;
+  role?: string;
+}
+
+const createToken = async ({
+  userId,
+  token,
+  type,
+  expires,
+  blacklisted = false,
+  role
+}: TokenCreateInput): Promise<Token> => {
   try {
     const createdToken = await prisma.token.create({
       data: {
@@ -33,11 +39,12 @@ const createToken = async (
         token,
         type,
         expires,
-        blacklisted, // Store the blacklisted flag
+        blacklisted,
+        role,
       },
     });
 
-    return toJSON(createdToken);  // Apply toJSON to the created token
+    return toJSON(createdToken);
   } catch (error: unknown) {
     if (error instanceof Error) {
       throw new Error(`Error creating token: ${error.message}`);
@@ -46,19 +53,24 @@ const createToken = async (
   }
 };
 
-
-// Get token by userId and type
-const getTokenByUserAndType = async (userId: number, type: TokenTypes): Promise<Token | null> => {
+const getTokenByUserAndType = async (
+  userId: number, 
+  type: TokenTypes,
+  requiredRole?: string
+): Promise<Token | null> => {
   try {
     const token = await prisma.token.findFirst({
       where: {
         userId,
         type,
         blacklisted: false,
+        ...(requiredRole && {
+          role: requiredRole
+        })
       },
     });
 
-    return token ? toJSON(token) : null;  // Apply toJSON to the token if found
+    return token ? toJSON(token) : null;
   } catch (error: unknown) {
     if (error instanceof Error) {
       throw new Error(`Error fetching token: ${error.message}`);
@@ -67,7 +79,6 @@ const getTokenByUserAndType = async (userId: number, type: TokenTypes): Promise<
   }
 };
 
-// Get all tokens for a user
 const getTokensByUser = async (userId: number): Promise<Token[]> => {
   try {
     const tokens = await prisma.token.findMany({
@@ -77,7 +88,7 @@ const getTokensByUser = async (userId: number): Promise<Token[]> => {
       },
     });
 
-    return tokens.map(toJSON);  // Apply toJSON to each token
+    return tokens.map(toJSON);
   } catch (error: unknown) {
     if (error instanceof Error) {
       throw new Error(`Error fetching tokens for user: ${error.message}`);
@@ -86,7 +97,6 @@ const getTokensByUser = async (userId: number): Promise<Token[]> => {
   }
 };
 
-// Blacklist a token
 const blacklistToken = async (tokenId: number): Promise<Token> => {
   try {
     const blacklistedToken = await prisma.token.update({
@@ -94,7 +104,7 @@ const blacklistToken = async (tokenId: number): Promise<Token> => {
       data: { blacklisted: true },
     });
 
-    return toJSON(blacklistedToken);  // Apply toJSON to the blacklisted token
+    return toJSON(blacklistedToken);
   } catch (error: unknown) {
     if (error instanceof Error) {
       throw new Error(`Error blacklisting token: ${error.message}`);
@@ -103,14 +113,13 @@ const blacklistToken = async (tokenId: number): Promise<Token> => {
   }
 };
 
-// Delete a token by its ID
 const deleteToken = async (tokenId: number): Promise<Token> => {
   try {
     const deletedToken = await prisma.token.delete({
       where: { id: tokenId },
     });
 
-    return toJSON(deletedToken);  // Apply toJSON to the deleted token
+    return toJSON(deletedToken);
   } catch (error: unknown) {
     if (error instanceof Error) {
       throw new Error(`Error deleting token: ${error.message}`);
@@ -118,14 +127,14 @@ const deleteToken = async (tokenId: number): Promise<Token> => {
     throw new Error("Unknown error occurred while deleting token.");
   }
 };
-// Add a method to fetch a token by its ID in TokenModel
+
 const getTokenById = async (tokenId: number): Promise<Token | null> => {
   try {
     const token = await prisma.token.findUnique({
-      where: { id: tokenId },  // Find token by ID
+      where: { id: tokenId },
     });
 
-    return token ? toJSON(token) : null;  // Apply toJSON if token found
+    return token ? toJSON(token) : null;
   } catch (error: unknown) {
     if (error instanceof Error) {
       throw new Error(`Error fetching token by ID: ${error.message}`);
@@ -134,15 +143,20 @@ const getTokenById = async (tokenId: number): Promise<Token | null> => {
   }
 };
 
-// Update a token's properties, such as setting it to blacklisted
-const updateToken = async (tokenId: number, updateData: Partial<Token>): Promise<Token> => {
+interface TokenUpdateInput {
+  role?: string;
+  blacklisted?: boolean;
+  expires?: Date;
+}
+
+const updateToken = async (tokenId: number, updateData: TokenUpdateInput): Promise<Token> => {
   try {
     const updatedToken = await prisma.token.update({
-      where: { id: tokenId },  // Find token by ID
-      data: updateData,         // Apply the update data
+      where: { id: tokenId },
+      data: updateData,
     });
 
-    return toJSON(updatedToken);  // Apply toJSON to the updated token
+    return toJSON(updatedToken);
   } catch (error: unknown) {
     if (error instanceof Error) {
       throw new Error(`Error updating token: ${error.message}`);
