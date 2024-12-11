@@ -131,7 +131,16 @@ const generateAuthTokens = async (user: {
     },
   };
 };
+const generateJwtToken = (user: any) => {
+  const payload = {
+    sub: user.id,  // 'sub' is typically used for the user ID
+    name: user.name, // Optional: other user information you may want to include in the token
+  };
 
+  return jwt.sign(payload, config.jwt.secret, {
+    expiresIn: config.jwt.accessExpirationMinutes * 60, // Expiry time for the access token
+  });
+};
 const generateResetPasswordToken = async (email: string): Promise<string> => {
   const user = await userService.getUserByEmail(email);
   if (!user) {
@@ -190,4 +199,5 @@ export const tokenService = {
   generateResetPasswordToken,
   generateVerifyEmailToken,
   blacklistToken: TokenModel.blacklistToken,
+  generateJwtToken
 };

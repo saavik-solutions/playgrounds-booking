@@ -22,22 +22,19 @@ const createUser = catchAsync(async (req: Request, res: Response) => {
   const user = await userService.createUser(req.body);
   
   // Step 2: Generate the access and refresh tokens for the user
-  const { access, refresh } = await tokenService.generateAuthTokens({ id: user.id });
+ const tokens = await tokenService.generateAuthTokens({ id: user.id,
+  role: user.role || 'user',}); 
   
   // Step 3: Set the tokens as cookies in the response
-  res.cookie('accessToken', access.token, {
-    httpOnly: true, 
-    secure: process.env.NODE_ENV === 'production', 
+    res.setHeader('Authorization', `Bearer ${tokens.access.token}`);
+
+  res.cookie('refreshToken', tokens.refresh.token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
-    expires: access.expires,
+    expires: tokens.refresh.expires, // Expiration for refresh token
   });
 
-  res.cookie('refreshToken', refresh.token, {
-    httpOnly: true, 
-    secure: process.env.NODE_ENV === 'production', 
-    sameSite: 'strict',
-    expires: refresh.expires, 
-  });
 
 
   res.status(httpStatus.CREATED).send({
@@ -45,8 +42,8 @@ const createUser = catchAsync(async (req: Request, res: Response) => {
     user: {
       id: user.id,
       email: user.email,
-      name: user.name, 
-      role:user.role
+      name: user.name,
+      role:user.role,// Include any other non-sensitive user data
     },
   });
 });

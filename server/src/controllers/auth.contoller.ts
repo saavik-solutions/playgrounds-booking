@@ -8,7 +8,8 @@ import { authService, userService, tokenService, emailService } from '../service
  */
 const register = catchAsync(async (req: Request, res: Response) => {
   const user = await userService.createUser(req.body); // Create a new user
-  const tokens = await tokenService.generateAuthTokens(user); // Generate tokens
+  const tokens = await tokenService.generateAuthTokens({ id: user.id,
+  role: user.role || 'user',}); // Generate tokens
 
  
  res.setHeader('Authorization', `Bearer ${tokens.access.token}`);
@@ -34,7 +35,8 @@ const login = catchAsync(async (req: Request, res: Response) => {
   const user = await authService.loginWithEmailAndPassword(email, password);
 
   // Generate tokens
-  const tokens = await tokenService.generateAuthTokens(user);
+  const tokens = await tokenService.generateAuthTokens({ id: user.id,
+  role: user.role || 'user',});
 
   // Set cookies
  res.setHeader('Authorization', `Bearer ${tokens.access.token}`);;
@@ -94,6 +96,16 @@ const logout = catchAsync(async (req: Request, res: Response) => {
 const refreshTokens = catchAsync(async (req: Request, res: Response) => {
   const { refreshToken } = req.body;
   const tokens = await authService.refreshAuth(refreshToken); // Generate new tokens
+  
+  // Set accessToken in Authorization header (Bearer token)
+  res.setHeader('Authorization', `Bearer ${tokens.access.token}`);
+  
+   res.cookie('refreshToken', tokens.refresh.token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    expires: tokens.refresh.expires, // Expiration for refresh token
+  });
   res.send({ ...tokens });
 });
 

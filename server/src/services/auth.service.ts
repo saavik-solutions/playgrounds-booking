@@ -46,7 +46,7 @@ const logout = async (refreshToken: string) => {
     }
 
     // Blacklist the refresh token
-    await tokenService.blacklistToken(String(tokenDoc.id)); // Ensure token ID is passed as a string
+    await tokenService.blacklistToken((tokenDoc.id)); // Ensure token ID is passed as a string
   } catch (error) {
     throw new ApiError('Error blacklisting token', httpStatus.INTERNAL_SERVER_ERROR);
   }
@@ -68,7 +68,8 @@ const refreshAuth = async (refreshToken: string) => {
     }
 
     // Generate new authentication tokens
-    return tokenService.generateAuthTokens(user);
+    return tokenService.generateAuthTokens({ id: user.id,
+  role: user.role || 'user',});
   } catch (error) {
     throw new ApiError('Invalid refresh token', httpStatus.UNAUTHORIZED);
   }
@@ -92,7 +93,7 @@ const resetPassword = async (resetToken: string, newPassword: string) => {
 
     await userService.updateUser(user.id, { password: hashedPassword });
 
-    await tokenService.blacklistToken(String(resetTokenDoc.id));
+    await tokenService.blacklistToken((resetTokenDoc.id));
     // Blacklist the reset token
   } catch (error) {
     throw new ApiError('Error resetting password', httpStatus.INTERNAL_SERVER_ERROR);
@@ -113,7 +114,7 @@ const verifyEmail = async (verifyEmailToken: string) => {
 
     // Mark email as verified
     await userService.updateUser(user.id, { isEmailVerified: true });
-    await tokenService.blacklistToken(String(verifyEmailTokenDoc.id)); // Blacklist the verification token
+    await tokenService.blacklistToken((verifyEmailTokenDoc.id)); // Blacklist the verification token
   } catch (error) {
     throw new ApiError('Error verifying email', httpStatus.INTERNAL_SERVER_ERROR);
   }
