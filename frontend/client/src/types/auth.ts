@@ -24,7 +24,7 @@ export interface GoogleLoginData {
 
 export interface AuthResponse {
   accessToken: string;
-  refreshToken?: string;
+  user: User;
 }
 
 export interface LogoutResponse {

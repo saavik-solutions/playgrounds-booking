@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { setAccessToken, logout } from '@/redux/slices/authSlice';
+import { setAuthState, logout } from '@/redux/slices/authSlice';
 import { RootState } from '@/redux/store';
+import { getRoleFromToken } from '@/utils/token'; // Utility to decode and extract role
 import { AuthResponse, GoogleLoginData, LoginCredentials, LogoutResponse, RegisterUserData } from '@/types';
 import { API_ENDPOINTS } from '@/core/constants';
 
@@ -34,10 +35,26 @@ export const authApi = createApi({
       onQueryStarted: async (arg, { dispatch, queryFulfilled }) => {
         try {
           const { data } = await queryFulfilled; // Wait for mutation to complete
-          if (isDevelopment) {
-            console.log('Login successful:', data);
+          const role = getRoleFromToken(data.accessToken); // Extract role from token
+
+          if (!role) {
+            throw new Error('Role not found in token.');
           }
-          dispatch(setAccessToken(data.accessToken)); // Store token in Redux state
+
+          if (isDevelopment) {
+            console.log('Login successful:', { ...data, role });
+          }
+
+          // Update Redux state
+          dispatch(
+            setAuthState({
+              accessToken: data.accessToken,
+              role,
+              user: data.user,
+            })
+          );
+
+          // Save token locally
           localStorage.setItem('accessToken', data.accessToken);
         } catch (error) {
           if (isDevelopment) {
@@ -62,10 +79,26 @@ export const authApi = createApi({
       onQueryStarted: async (arg, { dispatch, queryFulfilled }) => {
         try {
           const { data } = await queryFulfilled; // Wait for mutation to complete
-          if (isDevelopment) {
-            console.log('Google login successful:', data);
+          const role = getRoleFromToken(data.accessToken); // Extract role from token
+
+          if (!role) {
+            throw new Error('Role not found in token.');
           }
-          dispatch(setAccessToken(data.accessToken)); // Store token in Redux state
+
+          if (isDevelopment) {
+            console.log('Google login successful:', { ...data, role });
+          }
+
+          // Update Redux state
+          dispatch(
+            setAuthState({
+              accessToken: data.accessToken,
+              role,
+              user: data.user,
+            })
+          );
+
+          // Save token locally
           localStorage.setItem('accessToken', data.accessToken);
         } catch (error) {
           if (isDevelopment) {
@@ -85,7 +118,8 @@ export const authApi = createApi({
           if (isDevelopment) {
             console.log('Logout successful');
           }
-          dispatch(logout()); // Clear token from Redux
+          // Clear Redux state and local storage
+          dispatch(logout());
           localStorage.removeItem('accessToken');
         } catch (error) {
           if (isDevelopment) {
