@@ -1,3 +1,4 @@
+"use client"
 import React, { useState } from 'react';
 import axios from 'axios'; // Ensure Axios is imported
 import api from '@/services/api'; // Custom API instance

@@ -27,7 +27,15 @@ if (config.env !== 'test') {
   app.use(errorHandler);
 } // Logs HTTP requests
 app.use(helmet()); // Secure HTTP headers
-app.use(cors()); // Enable Cross-Origin Resource Sharing
+const corsOptions = {
+  origin: ['http://localhost:3000'], // Replace with the frontend's URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+  credentials: true, // Allow cookies to be sent
+};
+
+// Apply CORS middleware with options
+app.use(cors(corsOptions));
 app.options('*', cors());
 app.use(express.json()); // Parse JSON request bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
