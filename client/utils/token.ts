@@ -1,4 +1,4 @@
-import { jwtDecode } from 'jwt-decode'; // Fix import if necessary
+import { jwtDecode } from 'jwt-decode'; 
 import Cookies from 'js-cookie'; // Ensure you install this: `npm install js-cookie`
 import { API_ENDPOINTS, COOKIES } from '../core/constants';
 import { api } from '../services/api';
