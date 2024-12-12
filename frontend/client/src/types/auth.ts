@@ -4,5 +4,6 @@ import { User } from "./user";
 export interface AuthState {
   accessToken: string | null;
   role: string | null;
-  user: User | null;
+    user: User | null;
+      isAuthenticated: boolean;
 }
