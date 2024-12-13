@@ -5,7 +5,7 @@ export interface AuthState {
   isAuthenticated: boolean;
   accessToken: string | null;
   user: User | null;
-  role: UserRole | null;
+  role: string| null;
   loading: boolean;
   error: string | null;
 }
@@ -25,6 +25,13 @@ export interface GoogleLoginData {
 }
 
 export interface AuthResponse {
+  accessToken: string;
+  user: User;
+  
+}
+
+export interface LoginResponse{
+  role: string;
   accessToken: string;
   user: User;
 }

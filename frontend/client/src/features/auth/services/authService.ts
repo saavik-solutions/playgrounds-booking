@@ -1,39 +1,50 @@
 import { getRoleFromToken } from '@/utils/token';
 import { Dispatch } from '@reduxjs/toolkit';
-import { setAuthState, logout } from '@/redux/slices/authSlice';
-import { AuthResponse, UserRole } from '@/types';
+import { setAuthState, logout, setLoading } from '@/redux/slices/authSlice';
+import { AuthResponse } from '@/types';
 
-const isValidRole = (role: string): role is UserRole => {
-  return ['admin', 'user'].includes(role);
-};
 class AuthService {
   static async handleAuthSuccess(dispatch: Dispatch, data: AuthResponse) {
     try {
-      const role = getRoleFromToken(data.accessToken);
-      
-     if (!role || !isValidRole(role)) {
-      throw new Error('Role not found or invalid in token');
-    }
+      dispatch(setLoading(true));
 
-      dispatch(setAuthState({
-        accessToken: data.accessToken,
-        role,
-        user: data.user,
-       
-      }));
+      const { accessToken, user } = data;
 
-      localStorage.setItem('accessToken', data.accessToken);
+      // Guard Clause: Ensure both accessToken and user exist
+      if (!accessToken || !user) {
+        throw new Error('Invalid authentication response: Missing access token or user');
+      }
 
-      return { role, user: data.user };
+      const role = getRoleFromToken(accessToken);
+      console.log('Role:', role);
+
+      // Update Redux State
+      dispatch(
+        setAuthState({
+          accessToken,
+          role,
+          user,
+          isAuthenticated: true,
+        })
+      );
+
+      // Persist token in Local Storage
+      localStorage.setItem('accessToken', accessToken);
+
+      return { role, user };
     } catch (error) {
       console.error('Error handling auth success:', error);
       throw error;
+    } finally {
+      dispatch(setLoading(false));
     }
   }
 
   static handleLogout(dispatch: Dispatch) {
+    // Clear Redux and Local Storage
     dispatch(logout());
     localStorage.removeItem('accessToken');
   }
 }
- export default AuthService;
+
+export default AuthService;

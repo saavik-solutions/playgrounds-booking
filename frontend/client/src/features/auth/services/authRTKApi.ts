@@ -6,6 +6,7 @@ import type {
   AuthResponse,
   GoogleLoginData,
   LoginCredentials,
+  LoginResponse,
   LogoutResponse,
   RegisterUserData
 } from '@/types/auth';
@@ -15,7 +16,7 @@ export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery: createBaseQuery(),
   endpoints: (builder) => ({
-    login: builder.mutation<AuthResponse, LoginCredentials>({
+    login: builder.mutation<LoginResponse, LoginCredentials>({
       query: (credentials) => ({
         url: API_ENDPOINTS.AUTH.LOGIN,
         method: 'POST',
@@ -23,8 +24,17 @@ export const authApi = createApi({
       }),
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
-          const { data } = await queryFulfilled;
-          await AuthService.handleAuthSuccess(dispatch, data);
+           const { meta, data } = await queryFulfilled;
+      console.log('Response payload:', data);
+          const accessToken =
+            meta?.response?.headers?.get('Authorization')?.replace('Bearer ', '');
+
+          if (accessToken) {
+            const user = data?.user;
+            await AuthService.handleAuthSuccess(dispatch, { accessToken, user });
+          } else {
+            console.error('Access token not found in response headers');
+          }
         } catch (error) {
           console.error('Login error:', error);
         }
