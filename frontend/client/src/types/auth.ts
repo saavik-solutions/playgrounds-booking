@@ -1,11 +1,13 @@
 import { User } from "./user";
 
-
+export type UserRole = 'admin' | 'user' ;
 export interface AuthState {
+  isAuthenticated: boolean;
   accessToken: string | null;
-  role: string | null;
-    user: User | null;
-      isAuthenticated: boolean;
+  user: User | null;
+  role: UserRole | null;
+  loading: boolean;
+  error: string | null;
 }
 export interface LoginCredentials {
   email: string;
