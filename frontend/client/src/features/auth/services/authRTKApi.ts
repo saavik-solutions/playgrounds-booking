@@ -1,22 +1,17 @@
 // src/features/auth/services/authRTKApi.ts
 import { createApi } from '@reduxjs/toolkit/query/react';
-import { createBaseQuery } from './baseQuery';
-import AuthService from './authService';
-import type {
-  AuthResponse,
-  GoogleLoginData,
-  LoginCredentials,
-  LoginResponse,
-  LogoutResponse,
-  RegisterUserData
-} from '@/types/auth';
+
 import { API_ENDPOINTS } from '@/core/constants';
+import {setUserRole } from '@/redux/slices/authSlice';
+import type {  LoginCredentials } from '@/types/auth';
+import { createBaseQuery } from './baseQuery';
+import { User } from '@/types';
 
 export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery: createBaseQuery(),
   endpoints: (builder) => ({
-    login: builder.mutation<LoginResponse, LoginCredentials>({
+    login: builder.mutation<User, LoginCredentials>({
       query: (credentials) => ({
         url: API_ENDPOINTS.AUTH.LOGIN,
         method: 'POST',
@@ -24,75 +19,22 @@ export const authApi = createApi({
       }),
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
-           const { meta, data } = await queryFulfilled;
-      console.log('Response payload:', data);
-          const accessToken =
-            meta?.response?.headers?.get('Authorization')?.replace('Bearer ', '');
+          const { data } = await queryFulfilled;
 
-          if (accessToken) {
-            const user = data?.user;
-            await AuthService.handleAuthSuccess(dispatch, { accessToken, user });
-          } else {
-            console.error('Access token not found in response headers');
+          // Validate response
+          if (!data.role) {
+            throw new Error('Login response is missing the user role.');
           }
+
+          // Update Redux state with the user role
+          const userRole = data.role;
+          dispatch(setUserRole(userRole));
         } catch (error) {
           console.error('Login error:', error);
-        }
-      },
-    }),
-
-    register: builder.mutation<AuthResponse, RegisterUserData>({
-      query: (userData) => ({
-        url: API_ENDPOINTS.AUTH.REGISTER,
-        method: 'POST',
-        body: userData,
-      }),
-      async onQueryStarted(_, { dispatch, queryFulfilled }) {
-        try {
-          const { data } = await queryFulfilled;
-          await AuthService.handleAuthSuccess(dispatch, data);
-        } catch (error) {
-          console.error('Registration error:', error);
-        }
-      },
-    }),
-
-    googleLogin: builder.mutation<AuthResponse, GoogleLoginData>({
-      query: (tokenData) => ({
-        url: API_ENDPOINTS.AUTH.GOOGLE_LOGIN,
-        method: 'POST',
-        body: tokenData,
-      }),
-      async onQueryStarted(_, { dispatch, queryFulfilled }) {
-        try {
-          const { data } = await queryFulfilled;
-          await AuthService.handleAuthSuccess(dispatch, data);
-        } catch (error) {
-          console.error('Google login error:', error);
-        }
-      },
-    }),
-
-    logout: builder.mutation<LogoutResponse, void>({
-      query: () => ({
-        url: API_ENDPOINTS.AUTH.LOGOUT,
-        method: 'POST',
-      }),
-      async onQueryStarted(_, { dispatch, queryFulfilled }) {
-        try {
-          await queryFulfilled;
-          AuthService.handleLogout(dispatch);
-        } catch (error) {
-          console.error('Logout error:', error);
         }
       },
     }),
   }),
 });
 
-export const {
-  useLoginMutation,
-  useRegisterMutation,
-  useGoogleLoginMutation,
-  useLogoutMutation,
-} = authApi;
+export const { useLoginMutation } = authApi;

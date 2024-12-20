@@ -1,64 +1,33 @@
-import { AuthState, User,  } from "@/types";
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+// src/redux/slices/authSlice.ts
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-
+interface AuthState {
+  authHeader: string | null;
+  userRole: string | null;
+}
 
 const initialState: AuthState = {
-  isAuthenticated: false,
-  accessToken: null,
-  user: null,
-  role: null,
-  loading: false,
-  error: null,
+  authHeader: null,
+  userRole: null,
 };
 
-interface SetAuthStatePayload {
-  accessToken: string;
-  user: User;
-  role: string| null;
-  isAuthenticated: boolean;
-}
-export const authSlice = createSlice({
+const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-  setAuthState: (state, action: PayloadAction<SetAuthStatePayload>) => {
-  const { accessToken, user, role, isAuthenticated = true } = action.payload;
-  state.isAuthenticated = isAuthenticated;
-  state.accessToken = accessToken;
-  state.user = user;
-  state.role = role;
-  state.error = null;
-},
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.loading = action.payload;
+    setAuthHeader(state, action: PayloadAction<string>) {
+      state.authHeader = action.payload;
     },
-    setError: (state, action: PayloadAction<string>) => {
-      state.error = action.payload;
-      state.loading = false;
+    setUserRole(state, action: PayloadAction<string>) {
+      state.userRole = action.payload;
     },
-    logout: (state) => {
-      state.isAuthenticated = false;
-      state.accessToken = null;
-      state.user = null;
-      state.role = null;
-      state.error = null;
+    clearAuth(state) {
+      state.authHeader = null;
+      state.userRole = null;
     },
   },
 });
 
-export const { setAuthState, setLoading, setError, logout } = authSlice.actions;
-
-// Selectors
-export const selectIsAuthenticated = (state: { auth: AuthState }) => 
-  state.auth.isAuthenticated;
-export const selectCurrentUser = (state: { auth: AuthState }) => 
-  state.auth.user;
-export const selectUserRole = (state: { auth: AuthState }) => 
-  state.auth.role;
-export const selectAuthError = (state: { auth: AuthState }) => 
-  state.auth.error;
-export const selectAuthLoading = (state: { auth: AuthState }) => 
-  state.auth.loading;
+export const { setAuthHeader, setUserRole, clearAuth } = authSlice.actions;
 
 export default authSlice.reducer;

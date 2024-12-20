@@ -1,33 +1,44 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
-import { useRouter } from 'next/navigation';
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { useRouter } from "next/navigation";
+import { RootState } from "@/redux/store"; // Adjust the import path for your store
+import { clearAuth } from "@/redux/slices/authSlice";
 
-const HomePage: React.FC = () => {
+const RootPage: React.FC = () => {
+  const dispatch = useDispatch();
   const router = useRouter();
-  const { accessToken, role } = useSelector((state: RootState) => state.auth);
 
-  // Handle redirection based on the authentication state
-  React.useEffect(() => {
-    if (!accessToken) {
-      router.push('/auth/login'); // Redirect to login if not authenticated
-    } else if (role === 'admin') {
-      router.push('/admin/dashboard'); // Redirect admin users
-    } else if (role === 'user') {
-      router.push('/user/dashboard'); // Redirect regular users
+  // Access auth state from Redux
+  const authHeader = useSelector((state: RootState) => state.auth.authHeader);
+  const userRole = useSelector((state: RootState) => state.auth.userRole);
+
+  useEffect(() => {
+    // Check if user is authenticated
+    if (!authHeader) {
+      // If not authenticated, navigate to login page
+      router.push("/auth/login");
+      return;
     }
-  }, [accessToken, role, router]);
+
+    // Navigate based on user role
+    if (userRole === "admin") {
+      router.push("/admin/dashboard");
+    } else if (userRole === "user") {
+      router.push("/user/dashboard");
+    } else {
+      // Clear auth if the role is unrecognized and redirect to login
+      dispatch(clearAuth());
+      router.push("/login");
+    }
+  }, [authHeader, userRole, dispatch, router]);
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      <h1 className="text-4xl font-bold">Welcome to the Application</h1>
-      <p className="mt-4 text-lg">
-        Redirecting you to your dashboard...
-      </p>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <p className="text-lg font-semibold text-gray-700">Redirecting...</p>
     </div>
   );
 };
 
-export default HomePage;
+export default RootPage;
