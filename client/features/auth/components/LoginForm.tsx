@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/auth/password-input";
 import { OAuthButtons } from "@/components/auth/oauth-buttons";
-import { useLoginMutation } from "@/app/redux/services/auth";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -23,7 +22,7 @@ export default function LoginForm() {
   }>({});
 
   // RTK Query hook
-  const [login] = useLoginMutation();
+ 
 
   const validateForm = (): boolean => {
     const errors: { email?: string; password?: string } = {};
@@ -37,21 +36,7 @@ export default function LoginForm() {
     e.preventDefault();
     if (!validateForm()) return;
 
-    setIsLoading(true);
-    try {
-      const response = await login({ email, password }).unwrap();
-      // Handle successful login (e.g., store token, redirect)
-      console.log("Login successful:", response);
-      // Save token in local storage (optional)
-      localStorage.setItem("token", response.token);
-    } catch (error: any) {
-      console.error("Login failed:", error);
-      setErrors({
-        general: error.data?.message || "Invalid credentials or login failed.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    
   };
 
   return (
