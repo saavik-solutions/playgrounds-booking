@@ -1,20 +1,32 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
+import React from "react";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/redux/store";
+
+import { Button } from "@/components/ui/button";
+import { googleSignIn } from "@/features/auth/services/authThunks";
 
 interface OAuthButtonsProps {
   isLoading: boolean;
 }
-export const OAuthButtons: React.FC<OAuthButtonsProps> = ({  isLoading }) => {
+
+export const OAuthButtons: React.FC<OAuthButtonsProps> = ({ isLoading }) => {
+  const dispatch = useDispatch<AppDispatch>();
+
+  const handleGoogleSignIn = () => {
+    dispatch(googleSignIn());
+  };
+
   return (
     <div className="grid gap-2">
       <Button
         variant="outline"
         className="w-full "
-
+        onClick={handleGoogleSignIn}
         disabled={isLoading}
       >
-          <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+        <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
           <path
             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
             fill="#4285F4"
@@ -35,5 +47,5 @@ export const OAuthButtons: React.FC<OAuthButtonsProps> = ({  isLoading }) => {
         Continue with Google
       </Button>
     </div>
-  )
-}
+  );
+};
